@@ -241,7 +241,7 @@ void draw_help(WINDOW *game_win)
   mvwaddstr(game_win, 5, 8, "| | | | | |___  | |____ | |");
   mvwaddstr(game_win, 6, 8, "\\_| |_/ \\____/  \\_____/ \\_/");
 
-  mvwaddstr(game_win, 10, 8, "NPONG is a PONG clone made using ncurses");
+  mvwaddstr(game_win, 10, 8, "NPONG is a Pong clone made using ncurses");
   mvwaddstr(game_win, 12, 8, "Player 1: up and down using \"w\" and \"s\"");
   mvwaddstr(game_win, 13, 8, "Player 2: up and down using arrow keys");
   mvwaddstr(game_win, 15, 8, "First player to score 5 points wins");
