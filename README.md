@@ -3,7 +3,7 @@ A Pong clone made using ncurses
 
 ### TODO list
 ```text
-[X] Options Menu
+[ ] Options Menu
 ```
 
 ### Gallery
