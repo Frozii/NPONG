@@ -5,17 +5,17 @@
 
 #include <npong.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-  // initialize ncurses
-  initscr();
+  init_renderer_and_options();
 
   // create our main windows
   WINDOW *game_win = newwin(game_win_height, game_win_width, game_win_start_y, game_win_start_x);
   WINDOW *score_win = newwin(score_win_height, score_win_width, 0, 0);
 
-  set_ncurses_options(game_win, score_win);
+  set_window_options(game_win, score_win);
 
+  // create players and the ball
   player_t *player_one = create_player(2, 8, 1, 4, 0);
   player_t *player_two = create_player(57, 8, 1, 4, 0);
   ball_t *ball = create_ball('O', game_win_width / 2, game_win_height / 2, 0.003, 0.003);

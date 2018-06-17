@@ -38,4 +38,5 @@ files:
 
 clean:
 	rm -f obj/*.o
+	rm -f build/*
 	@echo "\n[SUCCESS]"

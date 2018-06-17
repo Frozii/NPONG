@@ -50,12 +50,13 @@ player_t* create_player(int x, int y, int width, int height, int score);
 ball_t* create_ball(char symbol, int x, int y, float vx, float vy);
 int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, player_t *player_two);
 int draw_and_update_menu(WINDOW *game_win);
+void set_window_options(WINDOW *game_win, WINDOW *score_win);
 void clean_up(WINDOW *game_win, WINDOW *score_win, player_t *p_one, player_t *p_two, ball_t *b);
 void draw_help(WINDOW *game_win);
 void draw_score_and_window(WINDOW *score_win, int *player_one_score, int *player_two_score);
 void update_players(player_t *player_one, player_t *player_two);
 void draw_players_and_arena(WINDOW *game_win, player_t *player_one, player_t *player_two);
-void set_ncurses_options(WINDOW *game_win, WINDOW *score_win);
+void init_renderer_and_options();
 void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, player_t *player_two, int winner);
 
 #endif // NPONG_H

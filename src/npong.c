@@ -330,14 +330,17 @@ void draw_players_and_arena(WINDOW *game_win, player_t *player_one, player_t *pl
   }
 }
 
-void set_ncurses_options(WINDOW *game_win, WINDOW *score_win)
+void init_renderer_and_options()
 {
+  // initialize ncurses
+  initscr();
+
   if (has_colors() == FALSE) {
-    printf("Your terminal does not have color support.\n");
+    endwin();
+    printf("Your terminal does not support colors.\nFind a more modern system/terminal");
   }
-  else {
-    start_color();
-  }
+
+  start_color();
 
   // disable the use of CTRL+* shortcuts
   raw();
@@ -347,9 +350,6 @@ void set_ncurses_options(WINDOW *game_win, WINDOW *score_win)
 
   // make the cursor invisible
   curs_set(0);
-
-  // enable the use of F1, F2.. and arrow keys
-  keypad(game_win, TRUE);
 
   // background color
   init_color(COLOR_CYAN, 0, 200, 250);
@@ -362,6 +362,12 @@ void set_ncurses_options(WINDOW *game_win, WINDOW *score_win)
   // non-selected text color
   init_color(COLOR_BLUE, 130, 490, 720);
   init_pair(3, COLOR_BLUE, COLOR_CYAN);
+}
+
+void set_window_options(WINDOW *game_win, WINDOW *score_win)
+{
+  // enable the use of F1, F2.. and arrow keys
+  keypad(game_win, TRUE);
 
   // change the bg colors for the windows
   wbkgd(stdscr, COLOR_PAIR(1));
