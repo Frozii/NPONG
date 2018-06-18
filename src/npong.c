@@ -436,6 +436,9 @@ void clean_up(WINDOW *game_win, WINDOW *score_win, player_t *p_one, player_t *p_
 
   // delete score window
   delwin(score_win);
+
+  // deconstructs the stdscr and shuts down the ncurses library
+  endwin();
 }
 
 void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, player_t *player_two, int winner)

@@ -75,7 +75,5 @@ int main(void)
   }
 
   clean_up(game_win, score_win, player_one, player_two, ball);
-  endwin(); // deconstructs the stdscr and shuts down the ncurses library
-
   return 0;
 }
