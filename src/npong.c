@@ -46,7 +46,8 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
     ball->y += ball->vy;
 
   // check if the ball is past the screen on the x plane
-  if (ball->x < 0) {
+  if (ball->x < 0)
+  {
     player_two->score += 1;
     ball->flag_x = rand() % 2;
     ball->flag_y = rand() % 2;
@@ -58,7 +59,8 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
     if (player_two->score >= 5)
       winner = 2;
   }
-  else if (ball->x > game_win_width) {
+  else if (ball->x > game_win_width)
+  {
     player_one->score += 1;
     ball->flag_x = rand() % 2;
     ball->flag_y = rand() % 2;
@@ -78,7 +80,8 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
     ball->flag_y = 0;
 
   // player one to ball collision
-  if (ball->x > player_one->x && ball->x < player_one->x + 1 && ball->y > player_one->y - 1 && ball->y < (player_one->y + player_one->height)) {
+  if (ball->x > player_one->x && ball->x < player_one->x + 1 && ball->y > player_one->y - 1 && ball->y < (player_one->y + player_one->height))
+  {
     // reverse x
     if (ball->flag_x == 1)
       ball->flag_x = 0;
@@ -91,7 +94,8 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
   }
 
   // player two to ball collision
-  else if (ball->x < player_two->x && ball->x > player_two->x - 1 && ball->y > player_two->y - 1 && ball->y < (player_two->y + player_two->height)) {
+  else if (ball->x < player_two->x && ball->x > player_two->x - 1 && ball->y > player_two->y - 1 && ball->y < (player_two->y + player_two->height))
+  {
     // reverse x
     if (ball->flag_x == 1)
       ball->flag_x = 0;
@@ -104,7 +108,8 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
   }
 
   // make sure the max speed of the ball stays capped
-  if (ball->vx >= 0.008 || ball->vy >= 0.008) {
+  if (ball->vx >= 0.008 || ball->vy >= 0.008)
+  {
     ball->vx = 0.008;
     ball->vy = 0.008;
   }
@@ -121,7 +126,8 @@ int draw_and_update_menu(WINDOW *game_win)
   int amount_to_remove;
   int amount_to_print = 44;
 
-  if (current_width < 52) {
+  if (current_width < 52)
+  {
     amount_to_remove = 52 - current_width;
     amount_to_print = amount_to_print - amount_to_remove;
   }
@@ -139,13 +145,16 @@ int draw_and_update_menu(WINDOW *game_win)
   amount_to_print = 6;
 
   // calculate the amount to print for the menu item text
-  if (current_width < 12) {
+  if (current_width < 12)
+  {
     amount_to_remove = 12 - current_width;
     amount_to_print = amount_to_print - amount_to_remove;
   }
 
-  for (int i = 0; i < menu_item_amount; i++) {
-    if (i == highlighted && highlighted == 0) {
+  for (int i = 0; i < menu_item_amount; i++)
+  {
+    if (i == highlighted && highlighted == 0)
+    {
       strcpy(menu_item + 2, menu_items[i]);
 
       wattron(game_win, COLOR_PAIR(2));
@@ -158,7 +167,8 @@ int draw_and_update_menu(WINDOW *game_win)
       mvwaddnstr(game_win, 12, 8, menu_items[2], amount_to_print - 2);
       wattroff(game_win, COLOR_PAIR(3));
     }
-    else if (i == highlighted && highlighted == 1) {
+    else if (i == highlighted && highlighted == 1)
+    {
       strcpy(menu_item + 2, menu_items[i]);
 
       wattron(game_win, COLOR_PAIR(3));
@@ -173,7 +183,8 @@ int draw_and_update_menu(WINDOW *game_win)
       mvwaddnstr(game_win, 12, 8, menu_items[2], amount_to_print - 2);
       wattroff(game_win, COLOR_PAIR(3));
     }
-    else if (i == highlighted && highlighted == 2) {
+    else if (i == highlighted && highlighted == 2)
+    {
       strcpy(menu_item + 2, menu_items[i]);
 
       wattron(game_win, COLOR_PAIR(3));
@@ -194,14 +205,16 @@ int draw_and_update_menu(WINDOW *game_win)
   {
     case KEY_UP:
     {
-      if (highlighted > 0) {
+      if (highlighted > 0)
+      {
         (highlighted)--;
       }
     } break;
 
     case KEY_DOWN:
     {
-      if (highlighted < 2) {
+      if (highlighted < 2)
+      {
         (highlighted)++;
       }
     } break;
@@ -213,17 +226,20 @@ int draw_and_update_menu(WINDOW *game_win)
   }
 
   // return 1 if choice was "Play"
-  if (menu_choice == 10 && highlighted == 0) {
+  if (menu_choice == 10 && highlighted == 0)
+  {
     return 1;
   }
 
   // return 2 if choice was "Help"
-  else if (menu_choice == 10 && highlighted == 1) {
+  else if (menu_choice == 10 && highlighted == 1)
+  {
     return 2;
   }
 
   // return 3 if choice was "Quit"
-  else if (menu_choice == 10 && highlighted == 2) {
+  else if (menu_choice == 10 && highlighted == 2)
+  {
     return 3;
   }
 
@@ -266,35 +282,38 @@ void update_players(player_t *player_one, player_t *player_two)
   {
     case 'w':
     {
-      if (player_one->y > 1) {
+      if (player_one->y > 1)
+      {
         player_one->y--;
       }
     } break;
 
     case 's':
     {
-      if ((player_one->y + player_one->height) < (game_win_height - 1)) {
+      if ((player_one->y + player_one->height) < (game_win_height - 1))
+      {
         player_one->y++;
       }
     } break;
 
     case KEY_UP:
     {
-      if (player_two->y > 1) {
+      if (player_two->y > 1)
+      {
         player_two->y--;
       }
     } break;
 
     case KEY_DOWN:
     {
-      if ((player_two->y + player_two->height) < (game_win_height - 1)) {
+      if ((player_two->y + player_two->height) < (game_win_height - 1))
+      {
         player_two->y++;
       }
     } break;
 
     default:
     {
-
     } break;
   }
 }
@@ -308,24 +327,28 @@ void draw_players_and_arena(WINDOW *game_win, player_t *player_one, player_t *pl
   mvwaddstr(game_win, game_win_height - 1, game_win_width - 1, "+");
 
   // left and right border
-  for (int y = 1; y < game_win_height - 1; y++) {
+  for (int y = 1; y < game_win_height - 1; y++)
+  {
     mvwaddstr(game_win, y, 0, "|");
     mvwaddstr(game_win, y, game_win_width - 1, "|");
   }
 
   // top and bottom border
-  for (int x = 1; x < game_win_width - 1; x++) {
+  for (int x = 1; x < game_win_width - 1; x++)
+  {
     mvwaddstr(game_win, 0, x, "-");
     mvwaddstr(game_win, game_win_height - 1, x, "-");
   }
 
   // draw player one
-  for (int y = 0; y < player_one->height; y++) {
+  for (int y = 0; y < player_one->height; y++)
+  {
     mvwaddstr(game_win, player_one->y + y, player_one->x, "|");
   }
   
   // draw player two
-  for (int y = 0; y < player_two->height; y++) {
+  for (int y = 0; y < player_two->height; y++)
+  {
     mvwaddstr(game_win, player_two->y + y, player_two->x, "|");
   }
 }
@@ -335,7 +358,8 @@ void init_renderer_and_options()
   // initialize ncurses
   initscr();
 
-  if (has_colors() == FALSE) {
+  if (has_colors() == FALSE)
+  {
     endwin();
     printf("Your terminal does not support colors.\nFind a more modern system/terminal.");
   }
@@ -443,7 +467,8 @@ void clean_up(WINDOW *game_win, WINDOW *score_win, player_t *p_one, player_t *p_
 
 void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, player_t *player_two, int winner)
 {
-  while (winner == 1 || winner == 2) {
+  while (winner == 1 || winner == 2)
+  {
     wclear(game_win);
     wclear(score_win);
 
@@ -451,12 +476,14 @@ void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, p
     mvwaddstr(game_win, 10, 26, "[Q] for main menu");
     mvwaddstr(game_win, 11, 26, "[R] for a rematch");
 
-    for (int y = 3; y < 8; y++) {
+    for (int y = 3; y < 8; y++)
+    {
       mvwaddstr(game_win, y, (game_win_width / 2) - 4, "|");
       mvwaddstr(game_win, y, (game_win_width / 2) + 17, "|");
     }
 
-    for (int x = 26; x < 48; x++) {
+    for (int x = 26; x < 48; x++)
+    {
       mvwaddstr(game_win, 2, x, "-");
       mvwaddstr(game_win, 8, x, "-");
     }

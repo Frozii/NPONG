@@ -1,18 +1,18 @@
 # Makefile for the ncurses game "NPONG"
 
 # - Compiler - #
-CC	= gcc
+CC = gcc
 
 # - Directories - #
-IDIR	= inc
-ODIR	= obj
-BDIR	= build
+IDIR = inc
+ODIR = obj
+BDIR = build
 
 # - Flags - #
-CFLAGS	= -Wall -Wextra -O2 -I $(IDIR)
+COMPILER_FLAGS = -Wall -Wextra -O2 -I $(IDIR)
 
 # - Libraries - #
-LIBS	= -lncurses
+LINKER_FLAGS = -lncurses
 
 # - Files - #
 _DEPS = npong.h
@@ -24,10 +24,10 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 all: files npong
 
 $(ODIR)/%.o: %.c
-	$(CC) -c $< -o $@ $(CFLAGS)
+	$(CC) -c $< $(COMPILER_FLAGS) -o $@
 
 npong: $(OBJ)
-	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
+	$(CC) $^ $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(BDIR)/$@
 	@echo "\n[SUCCESS]"
 
 files:

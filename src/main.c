@@ -20,21 +20,26 @@ int main(void)
   player_t *player_two = create_player(57, 8, 1, 4, 0);
   ball_t *ball = create_ball('O', game_win_width / 2, game_win_height / 2, 0.003, 0.003);
 
-  while (running) {
+  while (running)
+  {
     /* Menu */
-    if (gamestate == 0) {
+    if (gamestate == 0)
+    {
       wclear(game_win);
 
       int result = draw_and_update_menu(game_win);
 
-      if (result == 1) {
+      if (result == 1)
+      {
         nodelay(game_win, TRUE);
         gamestate = 1;
       }
-      else if (result == 2) {
+      else if (result == 2)
+      {
         gamestate = 2;
       }
-      else if (result == 3) {
+      else if (result == 3)
+      {
         gamestate = 3;
       }
 
@@ -42,7 +47,8 @@ int main(void)
     }
 
     /* Play */
-    if (gamestate == 1) {
+    if (gamestate == 1)
+    {
       wclear(game_win);
       wclear(score_win);
 
@@ -59,7 +65,8 @@ int main(void)
     }
 
     /* Help */
-    if (gamestate == 2) {
+    if (gamestate == 2)
+    {
       wclear(game_win);
 
       draw_help(game_win);
@@ -69,7 +76,8 @@ int main(void)
       gamestate = 0;
     }
 
-    if (gamestate == 3) {
+    if (gamestate == 3)
+    {
       running = 0;
     }
   }
