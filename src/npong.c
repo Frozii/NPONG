@@ -532,5 +532,5 @@ void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, p
 
     wrefresh(game_win);
     wrefresh(score_win);
-  } 
+  }
 }
