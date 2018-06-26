@@ -7,6 +7,7 @@ typedef struct {
   int width;
   int height;
   int score;
+  int can_add_speed;
 } player_t;
 
 typedef struct {
@@ -20,7 +21,7 @@ typedef struct {
 } ball_t;
 
 /*
-* Gamestates:
+* Gamestates
 * 0 = Menu
 * 1 = Play
 * 2 = Help
@@ -46,7 +47,7 @@ extern int highlighted;
 extern int menu_item_amount;
 extern char *menu_items[];
 
-player_t* create_player(int x, int y, int width, int height, int score);
+player_t* create_player(int x, int y, int width, int height);
 ball_t* create_ball(char symbol, int x, int y, float vx, float vy);
 int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, player_t *player_two);
 int draw_and_update_menu(WINDOW *game_win);

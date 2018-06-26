@@ -1,7 +1,7 @@
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ncurses.h>
 
 #include <npong.h>
 
@@ -53,8 +53,8 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
     ball->flag_y = rand() % 2;
     ball->x = game_win_width / 2;
     ball->y = game_win_height / 2;
-    ball->vx = 0.003;
-    ball->vy = 0.003;
+    ball->vx = 0.002;
+    ball->vy = 0.002;
 
     if (player_two->score >= 5)
       winner = 2;
@@ -66,8 +66,8 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
     ball->flag_y = rand() % 2;
     ball->x = game_win_width / 2;
     ball->y = game_win_height / 2;
-    ball->vx = 0.003;
-    ball->vy = 0.003;
+    ball->vx = 0.002;
+    ball->vy = 0.002;
 
     if (player_one->score >= 5)
       winner = 1;
@@ -88,13 +88,25 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
     else if (ball->flag_x == 0)
       ball->flag_x = 1;
 
-    // add speed to the ball
-    ball->vx += 0.0003;
-    ball->vy += 0.0003;
+    if (player_one->can_add_speed == 1)
+    {
+      // add speed to the ball if it's below the max
+      if (ball->vx && ball->vy < 0.008)
+      {
+        ball->vx += 0.0004;
+        ball->vy += 0.0004;
+      }
+
+      player_one->can_add_speed = 0;
+    }
+  }
+  else
+  {
+    player_one->can_add_speed = 1;
   }
 
   // player two to ball collision
-  else if (ball->x < player_two->x && ball->x > player_two->x - 1 && ball->y > player_two->y - 1 && ball->y < (player_two->y + player_two->height))
+  if (ball->x < player_two->x && ball->x > player_two->x - 1 && ball->y > player_two->y - 1 && ball->y < (player_two->y + player_two->height))
   {
     // reverse x
     if (ball->flag_x == 1)
@@ -102,17 +114,29 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
     else if (ball->flag_x == 0)
       ball->flag_x = 1;
 
-    // add speed to the ball
-    ball->vx += 0.0003;
-    ball->vy += 0.0003;
+    if (player_two->can_add_speed == 1)
+    {
+      // add speed to the ball if it's below the max
+      if (ball->vx && ball->vy < 0.008)
+      {
+        ball->vx += 0.0004;
+        ball->vy += 0.0004;
+      }
+
+      player_two->can_add_speed = 0;
+    }
+  }
+  else
+  {
+    player_two->can_add_speed = 1;
   }
 
-  // make sure the max speed of the ball stays capped
+/*  // make sure the max speed of the ball stays capped
   if (ball->vx >= 0.008 || ball->vy >= 0.008)
   {
     ball->vx = 0.008;
     ball->vy = 0.008;
-  }
+  }*/
 
   mvwprintw(game_win, ball->y, ball->x, "%c", ball->symbol);
 
@@ -404,7 +428,7 @@ void set_window_options(WINDOW *game_win, WINDOW *score_win)
   wrefresh(score_win);
 }
 
-player_t* create_player(int x, int y, int width, int height, int score)
+player_t* create_player(int x, int y, int width, int height)
 {
   player_t *p = malloc(sizeof(player_t));
 
@@ -412,7 +436,8 @@ player_t* create_player(int x, int y, int width, int height, int score)
   p->y = y;
   p->width = width;
   p->height = height;
-  p->score = score;
+  p->score = 0;
+  p->can_add_speed = 1;
 
   return p;
 }

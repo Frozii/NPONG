@@ -1,7 +1,7 @@
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ncurses.h>
 
 #include <npong.h>
 
@@ -16,9 +16,9 @@ int main(void)
   set_window_options(game_win, score_win);
 
   // create players and the ball
-  player_t *player_one = create_player(2, 8, 1, 4, 0);
-  player_t *player_two = create_player(57, 8, 1, 4, 0);
-  ball_t *ball = create_ball('O', game_win_width / 2, game_win_height / 2, 0.003, 0.003);
+  player_t *player_one = create_player(2, 8, 1, 4);
+  player_t *player_two = create_player(57, 8, 1, 4);
+  ball_t *ball = create_ball('O', game_win_width / 2, game_win_height / 2, 0.002, 0.002);
 
   while (running)
   {
