@@ -55,6 +55,8 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
     ball->y = game_win_height / 2;
     ball->vx = 0.002;
     ball->vy = 0.002;
+    player_one->can_add_speed = 1;
+    player_two->can_add_speed = 1;
 
     if (player_two->score >= 5)
       winner = 2;
@@ -68,6 +70,8 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
     ball->y = game_win_height / 2;
     ball->vx = 0.002;
     ball->vy = 0.002;
+    player_one->can_add_speed = 1;
+    player_two->can_add_speed = 1;
 
     if (player_one->score >= 5)
       winner = 1;
@@ -98,11 +102,8 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
       }
 
       player_one->can_add_speed = 0;
+      player_two->can_add_speed = 1;
     }
-  }
-  else
-  {
-    player_one->can_add_speed = 1;
   }
 
   // player two to ball collision
@@ -123,12 +124,9 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
         ball->vy += 0.0004;
       }
 
+      player_one->can_add_speed = 1;
       player_two->can_add_speed = 0;
     }
-  }
-  else
-  {
-    player_two->can_add_speed = 1;
   }
 
 /*  // make sure the max speed of the ball stays capped
