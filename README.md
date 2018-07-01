@@ -13,7 +13,7 @@ cd src && make
 ### TODO list
 ```text
 [ ] Options Menu
-[X] Fix collision with ball so it can't gain speed multiple times when hitting the sides of the paddles
+[X] Fix found bugs
 ```
 
 ### Gallery
