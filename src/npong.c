@@ -129,13 +129,6 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
     }
   }
 
-/*  // make sure the max speed of the ball stays capped
-  if (ball->vx >= 0.008 || ball->vy >= 0.008)
-  {
-    ball->vx = 0.008;
-    ball->vy = 0.008;
-  }*/
-
   mvwprintw(game_win, ball->y, ball->x, "%c", ball->symbol);
 
   return winner;
