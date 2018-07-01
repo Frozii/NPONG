@@ -8,10 +8,10 @@ IDIR = inc
 ODIR = obj
 BDIR = build
 
-# - Flags - #
+# - CFlags - #
 COMPILER_FLAGS = -Wall -Wextra -O2 -I $(IDIR)
 
-# - Libraries - #
+# - Libs - #
 LINKER_FLAGS = -lncurses
 
 # - Files - #
