@@ -17,4 +17,4 @@ cd src && make
 ```
 
 ### Gallery
-![taken with scrot](https://i.imgur.com/ByaeNcG.png)
+![NPONG](https://i.imgur.com/ByaeNcG.png)
