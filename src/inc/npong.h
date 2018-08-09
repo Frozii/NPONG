@@ -1,7 +1,8 @@
 #ifndef NPONG_H
 #define NPONG_H
 
-typedef struct {
+typedef struct
+{
   int x;
   int y;
   int width;
@@ -10,7 +11,8 @@ typedef struct {
   int can_add_speed;
 } player_t;
 
-typedef struct {
+typedef struct
+{
   int flag_x;
   int flag_y;
   char symbol;
