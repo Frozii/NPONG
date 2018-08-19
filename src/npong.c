@@ -295,11 +295,6 @@ void update_players(player_t *player_one, player_t *player_two)
   // do collision detection and move player
   switch (key_pressed)
   {
-    case 'q':
-    {
-      gamestate = 0;
-    } break;
-      
     case 'w':
     {
       if (player_one->y > 1)
@@ -387,7 +382,7 @@ void init_renderer_and_options()
   start_color();
 
   // disable the use of CTRL+* shortcuts
-  raw();
+  //raw();
 
   // won't print pressed characters on the screen
   noecho();
@@ -465,27 +460,6 @@ void free_ball(ball_t *b)
   b = NULL;
 }
 
-void clean_up(WINDOW *game_win, WINDOW *score_win, player_t *p_one, player_t *p_two, ball_t *b)
-{
-  free(p_one);
-  p_one = NULL;
-
-  free(p_two);
-  p_two = NULL;
-
-  free(b);
-  b = NULL;
-
-  // delete game window
-  delwin(game_win);
-
-  // delete score window
-  delwin(score_win);
-
-  // deconstructs the stdscr and shuts down the ncurses library
-  endwin();
-}
-
 void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, player_t *player_two, int winner)
 {
   while (winner == 1 || winner == 2)
@@ -554,4 +528,25 @@ void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, p
     wrefresh(game_win);
     wrefresh(score_win);
   }
+}
+
+void clean_up(WINDOW *game_win, WINDOW *score_win, player_t *p_one, player_t *p_two, ball_t *b)
+{
+  free(p_one);
+  p_one = NULL;
+
+  free(p_two);
+  p_two = NULL;
+
+  free(b);
+  b = NULL;
+
+  // delete game window
+  delwin(game_win);
+
+  // delete score window
+  delwin(score_win);
+
+  // deconstructs the stdscr and shuts down the ncurses library
+  endwin();
 }
