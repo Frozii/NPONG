@@ -295,6 +295,11 @@ void update_players(player_t *player_one, player_t *player_two)
   // do collision detection and move player
   switch (key_pressed)
   {
+    case 'q':
+    {
+      gamestate = 0;
+    } break;
+      
     case 'w':
     {
       if (player_one->y > 1)
