@@ -22,6 +22,41 @@ int highlighted = 0;
 int menu_item_amount = 3;
 char *menu_items[] = {"Play", "Help", "Quit"};
 
+void init_renderer_and_options()
+{
+  // initialize ncurses
+  initscr();
+
+  if (has_colors() == FALSE)
+  {
+    endwin();
+    printf("Your terminal does not support colors.\nFind a more modern system/terminal.");
+  }
+
+  start_color();
+
+  // disable the use of CTRL+* shortcuts
+  raw();
+
+  // won't print pressed characters on the screen
+  noecho();
+
+  // make the cursor invisible
+  curs_set(0);
+
+  // background color
+  init_color(COLOR_CYAN, 0, 200, 250);
+  init_pair(1, COLOR_WHITE, COLOR_CYAN);
+
+  // selected text color
+  init_color(COLOR_GREEN, 420, 600, 140);
+  init_pair(2, COLOR_GREEN, COLOR_CYAN);
+
+  // non-selected text color
+  init_color(COLOR_BLUE, 130, 490, 720);
+  init_pair(3, COLOR_BLUE, COLOR_CYAN);
+}
+
 int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, player_t *player_two)
 {
   /*
@@ -368,41 +403,6 @@ void draw_players_and_arena(WINDOW *game_win, player_t *player_one, player_t *pl
   }
 }
 
-void init_renderer_and_options()
-{
-  // initialize ncurses
-  initscr();
-
-  if (has_colors() == FALSE)
-  {
-    endwin();
-    printf("Your terminal does not support colors.\nFind a more modern system/terminal.");
-  }
-
-  start_color();
-
-  // disable the use of CTRL+* shortcuts
-  raw();
-
-  // won't print pressed characters on the screen
-  noecho();
-
-  // make the cursor invisible
-  curs_set(0);
-
-  // background color
-  init_color(COLOR_CYAN, 0, 200, 250);
-  init_pair(1, COLOR_WHITE, COLOR_CYAN);
-
-  // selected text color
-  init_color(COLOR_GREEN, 420, 600, 140);
-  init_pair(2, COLOR_GREEN, COLOR_CYAN);
-
-  // non-selected text color
-  init_color(COLOR_BLUE, 130, 490, 720);
-  init_pair(3, COLOR_BLUE, COLOR_CYAN);
-}
-
 void set_window_options(WINDOW *game_win, WINDOW *score_win)
 {
   // enable the use of F1, F2.. and arrow keys
@@ -446,18 +446,6 @@ ball_t* create_ball(char symbol, int x, int y, float vx, float vy)
   b->vy = vy;
 
   return b;
-}
-
-void free_player(player_t *p)
-{
-  free(p);
-  p = NULL;
-}
-
-void free_ball(ball_t *b)
-{
-  free(b);
-  b = NULL;
 }
 
 void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, player_t *player_two, int winner)
@@ -530,16 +518,23 @@ void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, p
   }
 }
 
-void clean_up(WINDOW *game_win, WINDOW *score_win, player_t *p_one, player_t *p_two, ball_t *b)
+void free_player(player_t *p)
 {
-  free(p_one);
-  p_one = NULL;
+  free(p);
+  p = NULL;
+}
 
-  free(p_two);
-  p_two = NULL;
-
+void free_ball(ball_t *b)
+{
   free(b);
   b = NULL;
+}
+
+void clean_up(WINDOW *game_win, WINDOW *score_win, player_t *p_one, player_t *p_two, ball_t *b)
+{
+  free_player(p_one);
+  free_player(p_two);
+  free_ball(b);
 
   // delete game window
   delwin(game_win);
