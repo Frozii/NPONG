@@ -382,7 +382,7 @@ void init_renderer_and_options()
   start_color();
 
   // disable the use of CTRL+* shortcuts
-  //raw();
+  raw();
 
   // won't print pressed characters on the screen
   noecho();
