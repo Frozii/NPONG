@@ -40,7 +40,7 @@ int main(void)
       }
       else if (result == 3)
       {
-        gamestate = 3;
+        running = 0;
       }
 
       wrefresh(game_win);
@@ -74,11 +74,6 @@ int main(void)
 
       wgetch(game_win);
       gamestate = 0;
-    }
-
-    if (gamestate == 3)
-    {
-      running = 0;
     }
   }
 
