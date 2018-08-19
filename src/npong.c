@@ -494,7 +494,7 @@ void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, p
         player_two->score = 0;
 
         // reset position
-        player_two->y = (game_win_height / 2) - 2;
+        player_one->y = (game_win_height / 2) - 2;
         player_two->y = (game_win_height / 2) - 2;
 
         // switch gamestate
@@ -514,7 +514,7 @@ void victory_screen(WINDOW *game_win, WINDOW *score_win, player_t *player_one, p
         player_two->score = 0;
 
         // reset position
-        player_two->y = (game_win_height / 2) - 2;
+        player_one->y = (game_win_height / 2) - 2;
         player_two->y = (game_win_height / 2) - 2;
 
         // break out of loop
