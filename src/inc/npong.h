@@ -1,6 +1,11 @@
 #ifndef NPONG_H
 #define NPONG_H
 
+#include <ncurses.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef struct
 {
   int x;

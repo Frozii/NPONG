@@ -1,8 +1,3 @@
-#include <ncurses.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include <npong.h>
 
 int running = 1;
@@ -114,18 +109,26 @@ int update_and_draw_ball(WINDOW *game_win, ball_t *ball, player_t *player_one, p
 
   // check if the ball is past the screen on the y plane and reverse the flag
   if (ball->y < 1)
+  {
     ball->flag_y = 1;
+  }
   else if (ball->y > game_win_height - 1)
+  {
     ball->flag_y = 0;
+  }
 
   // player one to ball collision
   if (ball->x > player_one->x && ball->x < player_one->x + 1 && ball->y > player_one->y - 1 && ball->y < (player_one->y + player_one->height))
   {
     // reverse x
     if (ball->flag_x == 1)
+    {
       ball->flag_x = 0;
+    }
     else if (ball->flag_x == 0)
+    {
       ball->flag_x = 1;
+    }
 
     if (player_one->can_add_speed == 1)
     {
@@ -293,7 +296,6 @@ int draw_and_update_menu(WINDOW *game_win)
     return 3;
   }
 
-  // return in a controlled fashion
   return 4;
 }
 
@@ -310,7 +312,8 @@ void draw_help(WINDOW *game_win)
   mvwaddstr(game_win, 10, 8, "NPONG is a Pong clone made using ncurses");
   mvwaddstr(game_win, 12, 8, "Player 1: up and down using \"w\" and \"s\"");
   mvwaddstr(game_win, 13, 8, "Player 2: up and down using arrow keys");
-  mvwaddstr(game_win, 15, 8, "First player to score 5 points wins");
+  mvwaddstr(game_win, 15, 8, "You can press 'q' to exit the game if needed ingame");
+  mvwaddstr(game_win, 17, 8, "First player to score 5 points wins");
 }
 
 void draw_score_and_window(WINDOW *score_win, int *player_one_score, int *player_two_score)
@@ -330,6 +333,11 @@ void update_players(player_t *player_one, player_t *player_two)
   // do collision detection and move player
   switch (key_pressed)
   {
+    case 'q':
+    {
+      running = 0;
+    } break;
+
     case 'w':
     {
       if (player_one->y > 1)
