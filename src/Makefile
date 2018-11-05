@@ -23,7 +23,7 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 all: files npong
 
-$(ODIR)/%.o: %.c
+$(ODIR)/%.o: %.c $(DEPS)
 	$(CC) -c $< $(COMPILER_FLAGS) -o $@
 
 npong: $(OBJ)
