@@ -37,6 +37,6 @@ files:
 .PHONY: clean
 
 clean:
-	rm -f obj/*.o
-	rm -f build/*
+	rm -rf obj
+	rm -rf build
 	@echo "\n[SUCCESS]"
