@@ -10,6 +10,8 @@ Clone the repository.
 cd src && make
 ````
 
+The resulting binary will be in src/build/
+
 ### TODO list
 ```text
 [ ] Options Menu
