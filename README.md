@@ -1,6 +1,7 @@
 # NPONG
 
 ### Depends
+* A C99 compiler
 * ncurses
 
 ### Compiling
