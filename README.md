@@ -1,5 +1,7 @@
 # NPONG
-A Pong clone made using ncurses
+
+### Depends
+* ncurses
 
 ### Compiling
 Clone the repository.
