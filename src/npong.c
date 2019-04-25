@@ -26,6 +26,7 @@ void init_renderer_and_options()
   {
     endwin();
     printf("Your terminal does not support colors.\nFind a more modern system/terminal.");
+    exit(1);
   }
 
   start_color();
