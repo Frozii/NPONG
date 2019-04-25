@@ -16,4 +16,4 @@ cd src && make
 The resulting binary will be in src/build/
 
 ### Gallery
-![NPONG](https://i.imgur.com/ByaeNcG.png)
+![NPONG](https://i.imgur.com/BQpLtjW.png)
