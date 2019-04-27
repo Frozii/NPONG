@@ -31,7 +31,6 @@ npong: $(OBJ)
 	@echo "\n[SUCCESS]"
 
 files:
-	clear
 	mkdir -p $(ODIR)
 	mkdir -p build
 
