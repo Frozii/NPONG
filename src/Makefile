@@ -9,7 +9,7 @@ ODIR = obj
 BDIR = build
 
 # - CFlags - #
-COMPILER_FLAGS = -Wall -Wextra -Werror -O2 -std=c99 -I $(IDIR)
+COMPILER_FLAGS = -Wall -Wextra -O2 -std=c99 -I $(IDIR)
 
 # - Libs - #
 LINKER_FLAGS = -lncurses
