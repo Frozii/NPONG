@@ -16,7 +16,7 @@ int main(void)
   // create players and the ball
   player_t *player_one = create_player(2, 8, 1, 4);
   player_t *player_two = create_player(57, 8, 1, 4);
-  ball_t *ball = create_ball('O', game_win_width / 2, game_win_height / 2, 0.0002, 0.0002);
+  ball_t *ball = create_ball('O', game_win_width / 2, game_win_height / 2, 0.0004, 0.0004);
 
   while (running)
   {
