@@ -1,4 +1,4 @@
-# NPONG
+# npong
 
 ### Depends
 * A C99 compiler
