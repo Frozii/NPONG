@@ -1,0 +1,6 @@
+clear
+mkdir -p build
+
+gcc linux_npong.c -Wall -Wextra -O2 -std=c99 -o build/binary -lncurses
+
+echo [COMPLETE]
