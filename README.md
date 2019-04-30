@@ -10,7 +10,8 @@ Clone the repository.
 #### Linux
 
 ````
-cd src && make
+cd src
+./script
 ````
 
 The resulting binary will be in src/build/
