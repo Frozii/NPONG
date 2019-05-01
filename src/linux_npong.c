@@ -430,11 +430,13 @@ update_players()
 {
   switch(key_pressed)
   {
+    case 'Q':
     case 'q':
     {
       game.state = state_quit;
     } break;
 
+    case 'W':
     case 'w':
     {
       if(player_one.y > 1)
@@ -443,6 +445,7 @@ update_players()
       }
     } break;
 
+    case 'S':
     case 's':
     {
       if((player_one.y + player_one.h) < (game_win_h - 1))
@@ -559,16 +562,16 @@ run_game()
       render_main_menu(game_win);
       i32 result = update_main_menu(game_win);
 
-      if(result == 1)
+      if(result == state_play)
       {
         nodelay(game_win, 1);
         game.state = state_play;
       }
-      else if(result == 2)
+      else if(result == state_controls)
       {
         game.state = state_controls;
       }
-      else if(result == 3)
+      else if(result == state_quit)
       {
         game.state = state_quit;
       }
