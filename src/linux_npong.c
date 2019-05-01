@@ -28,6 +28,11 @@ typedef u32 b32;
 
 enum
 {
+  key_enter = 10
+};
+
+enum
+{
   black_pair,
   red_pair,
   green_pair,
@@ -45,7 +50,9 @@ typedef enum
   state_main_menu,
   state_play,
   state_controls,
-  state_quit
+  state_quit,
+
+  state_count
 } game_state_e;
 
 typedef struct
@@ -59,6 +66,7 @@ typedef struct
   i32 y;
   i32 w;
   i32 h;
+  i32 glyph;
   i32 score;
   i32 can_add_speed;
 } player_t;
@@ -84,7 +92,7 @@ i32 score_win_w = 60;
 i32 score_win_h = 3;
 
 i32 key_pressed;
-i32 menu_choice;
+i32 input;
 i32 highlighted;
 i32 menu_item_amount = 3;
 char *menu_items[] = {"Play", "Controls", "Quit"};
@@ -110,8 +118,8 @@ internal void
 render_players()
 {
   wattron(game_win, COLOR_PAIR(white_pair));
-  for(i32 y = 0; y < player_one.h; y++) {mvwaddstr(game_win, player_one.y + y, player_one.x, "|");}
-  for(i32 y = 0; y < player_two.h; y++) {mvwaddstr(game_win, player_two.y + y, player_two.x, "|");}
+  for(i32 y = 0; y < player_one.h; y++) {mvwprintw(game_win, player_one.y + y, player_one.x, "%c", player_one.glyph);}
+  for(i32 y = 0; y < player_two.h; y++) {mvwprintw(game_win, player_two.y + y, player_two.x, "%c", player_two.glyph);}
   wattroff(game_win, COLOR_PAIR(white_pair));
 }
 
@@ -227,9 +235,13 @@ update_ball()
   {
     // reverse x
     if(ball.flag_x == 1)
+    {
       ball.flag_x = 0;
+    }
     else if(ball.flag_x == 0)
+    {
       ball.flag_x = 1;
+    }
 
     if(player_two.can_add_speed == 1)
     {
@@ -249,7 +261,7 @@ update_ball()
 }
 
 internal void
-render_main_menu(WINDOW *game_win)
+render_main_menu()
 {
   // calculate the amount to print for the title text
   i32 current_width = getmaxx(game_win);
@@ -272,11 +284,10 @@ render_main_menu(WINDOW *game_win)
   mvwaddnstr(game_win, 6, 8, "\\_/ \\_/ \\_/     \\_____/ \\_/ \\_/ \\_____/", amount_to_print);
   wattroff(game_win, COLOR_PAIR(white_pair));
 
-  // render the menu options
+  // calculate the amount to print for the menu item text
   char menu_item[16] = "> ";
   amount_to_print = 10;
 
-  // calculate the amount to print for the menu item text
   if(current_width < 16)
   {
     amount_to_remove = 16 - current_width;
@@ -333,17 +344,18 @@ render_main_menu(WINDOW *game_win)
 }
 
 internal i32
-update_main_menu(WINDOW *game_win)
+update_main_menu()
 {
-  // record user movement between menu items
-  menu_choice = wgetch(game_win);
-  switch(menu_choice)
+  i32 result = state_count;
+
+  input = wgetch(game_win);
+  switch(input)
   {
     case KEY_UP:
     {
       if(highlighted > 0)
       {
-        (highlighted)--;
+        highlighted--;
       }
     } break;
 
@@ -351,35 +363,30 @@ update_main_menu(WINDOW *game_win)
     {
       if(highlighted < 2)
       {
-        (highlighted)++;
+        highlighted++;
       }
     } break;
 
-    default:
+    case key_enter:
     {
-
+      if(highlighted == 0)
+      {
+        result = state_play;
+      }
+      else if(highlighted == 1)
+      {
+        result = state_controls;
+      }
+      else if(highlighted == 2)
+      {
+        result = state_quit;
+      }
     } break;
+
+    default: break;
   }
 
-  // return 1 if choice was "Play"
-  if(menu_choice == 10 && highlighted == 0)
-  {
-    return 1;
-  }
-
-  // return 2 if choice was "Controls"
-  else if(menu_choice == 10 && highlighted == 1)
-  {
-    return 2;
-  }
-
-  // return 3 if choice was "Quit"
-  else if(menu_choice == 10 && highlighted == 2)
-  {
-    return 3;
-  }
-
-  return 4;
+  return result;
 }
 
 internal void
@@ -533,6 +540,11 @@ render_victory_screen(i32 winner)
       break;
     }
   }
+
+  player_one.y = (game_win_h / 2) - 2;
+  player_one.score = 0;
+  player_two.y = (game_win_h / 2) - 2;
+  player_two.score = 0;
 }
 
 internal void
@@ -577,17 +589,7 @@ run_game()
       render_players();
       render_ball();
       render_score_window();
-
-      if(winner)
-      {
-        render_victory_screen(winner);
-
-        player_one.score = 0;
-        player_two.score = 0;
-
-        player_one.y = (game_win_h / 2) - 2;
-        player_two.y = (game_win_h / 2) - 2;
-      }
+      if(winner){render_victory_screen(winner);}
 
       wrefresh(game_win);
       wrefresh(score_win);
@@ -596,7 +598,6 @@ run_game()
     if(game.state == state_controls)
     {
       render_controls(game_win);
-
       game.state = state_main_menu;
     }
   }
@@ -653,12 +654,14 @@ init_game()
   player_one.y = 8;
   player_one.w = 1;
   player_one.h = 4;
+  player_one.glyph = '|';
   player_one.can_add_speed = 1;
 
   player_two.x = 57;
   player_two.y = 8;
   player_two.w = 1;
   player_two.h = 4;
+  player_two.glyph = '|';
   player_two.can_add_speed = 1;
 
   ball.glyph = 'O';
