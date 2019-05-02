@@ -21,11 +21,6 @@ typedef double r64;
 
 typedef u32 b32;
 
-// NOTE(Rami): Do the same resize trick to render_controls()
-// NOTE(Rami): If you shrink the window enough and then expand,
-// there won't be anything rendered but the background, can we detect and
-// fix this?
-
 enum
 {
   key_enter = 10
@@ -83,14 +78,16 @@ typedef struct
   r32 vy;
 } ball_t;
 
-i32 game_win_x;
-i32 game_win_y = 3;
-i32 game_win_w = 60;
-i32 game_win_h = 20;
+typedef struct
+{
+  WINDOW *win;
+  i32 x;
+  i32 y;
+  i32 w;
+  i32 h;
+} window_t;
 
-i32 score_win_w = 60;
-i32 score_win_h = 3;
-
+// NOTE(Rami): 
 i32 key_pressed;
 i32 input;
 i32 highlighted;
@@ -99,28 +96,29 @@ char *menu_items[] = {"Play", "Controls", "Quit"};
 
 global game_t game;
 
-global WINDOW *game_win;
-global WINDOW *score_win;
+global window_t game_win;
+global window_t score_win;
 
 global player_t player_one;
 global player_t player_two;
+
 global ball_t ball;
 
 internal void
 render_ball()
 {
-  wattron(game_win, COLOR_PAIR(white_pair));
-  mvwprintw(game_win, ball.y, ball.x, "%c", ball.glyph);
-  wattroff(game_win, COLOR_PAIR(white_pair));
+  wattron(game_win.win, COLOR_PAIR(white_pair));
+  mvwprintw(game_win.win, ball.y, ball.x, "%c", ball.glyph);
+  wattroff(game_win.win, COLOR_PAIR(white_pair));
 }
 
 internal void
 render_players()
 {
-  wattron(game_win, COLOR_PAIR(white_pair));
-  for(i32 y = 0; y < player_one.h; y++) {mvwprintw(game_win, player_one.y + y, player_one.x, "%c", player_one.glyph);}
-  for(i32 y = 0; y < player_two.h; y++) {mvwprintw(game_win, player_two.y + y, player_two.x, "%c", player_two.glyph);}
-  wattroff(game_win, COLOR_PAIR(white_pair));
+  wattron(game_win.win, COLOR_PAIR(white_pair));
+  for(i32 y = 0; y < player_one.h; y++) {mvwprintw(game_win.win, player_one.y + y, player_one.x, "%c", player_one.glyph);}
+  for(i32 y = 0; y < player_two.h; y++) {mvwprintw(game_win.win, player_two.y + y, player_two.x, "%c", player_two.glyph);}
+  wattroff(game_win.win, COLOR_PAIR(white_pair));
 }
 
 internal i32
@@ -156,7 +154,7 @@ update_ball()
   }
 
   // check if the ball is past the screen on the x axis
-  if(ball.x < 0)
+  if(ball.x < 1)
   {
     player_two.score++;
 
@@ -167,14 +165,14 @@ update_ball()
 
     ball.flag_x = rand() % 2;
     ball.flag_y = rand() % 2;
-    ball.x = game_win_w / 2;
-    ball.y = game_win_h / 2;
+    ball.x = game_win.w / 2;
+    ball.y = game_win.h / 2;
     ball.vx = 0.0002;
     ball.vy = 0.0002;
     player_one.can_add_speed = 1;
     player_two.can_add_speed = 1;
   }
-  else if(ball.x > game_win_w)
+  else if(ball.x > (game_win.w - 1))
   {
     player_one.score++;
 
@@ -185,8 +183,8 @@ update_ball()
 
     ball.flag_x = rand() % 2;
     ball.flag_y = rand() % 2;
-    ball.x = game_win_w / 2;
-    ball.y = game_win_h / 2;
+    ball.x = game_win.w / 2;
+    ball.y = game_win.h / 2;
     ball.vx = 0.0002;
     ball.vy = 0.0002;
     player_one.can_add_speed = 1;
@@ -198,7 +196,7 @@ update_ball()
   {
     ball.flag_y = 1;
   }
-  else if(ball.y > game_win_h - 1)
+  else if(ball.y > game_win.h - 1)
   {
     ball.flag_y = 0;
   }
@@ -263,35 +261,32 @@ update_ball()
 internal void
 render_main_menu()
 {
-  // calculate the amount to print for the title text
-  i32 window_width = getmaxx(game_win);
-  i32 to_remove = 0;
-  i32 to_print = 44;
+  i32 window_width = getmaxx(game_win.win);
+  i32 print_count = 44;
+  i32 remove_count = 0;
 
   if(window_width < 52)
   {
-    to_remove = 52 - window_width;
-    to_print = to_print - to_remove;
+    remove_count = 52 - window_width;
+    print_count = print_count - remove_count;
   }
 
-  // render game title
-  wattron(game_win, COLOR_PAIR(white_pair));
-  mvwaddnstr(game_win, 1, 8, " _   _   _____   _____   _   _   _____ ", to_print);
-  mvwaddnstr(game_win, 2, 8, "/ \\ / \\ /  __ \\ /  _  \\ / \\ / \\ /  __ \\", to_print);
-  mvwaddnstr(game_win, 3, 8, "|  \\| | | /_/ | | | | | |  \\  | | |  \\/", to_print);
-  mvwaddnstr(game_win, 4, 8, "| . ` | |  __/  | | | | | . ` | | | ___", to_print);
-  mvwaddnstr(game_win, 5, 8, "| |\\  | | |     | |_| | | |\\  | | |_| |", to_print);
-  mvwaddnstr(game_win, 6, 8, "\\_/ \\_/ \\_/     \\_____/ \\_/ \\_/ \\_____/", to_print);
-  wattroff(game_win, COLOR_PAIR(white_pair));
+  wattron(game_win.win, COLOR_PAIR(white_pair));
+  mvwaddnstr(game_win.win, 1, 8, " _   _   _____   _____   _   _   _____ ", print_count);
+  mvwaddnstr(game_win.win, 2, 8, "/ \\ / \\ /  _  \\ /  _  \\ / \\ / \\ /  __ \\", print_count);
+  mvwaddnstr(game_win.win, 3, 8, "|  \\| | | |_| | | | | | |  \\  | | |  \\/", print_count);
+  mvwaddnstr(game_win.win, 4, 8, "| . ` | |  __/  | | | | | . ` | | | ___", print_count);
+  mvwaddnstr(game_win.win, 5, 8, "| |\\  | | |     | |_| | | |\\  | | |_| |", print_count);
+  mvwaddnstr(game_win.win, 6, 8, "\\_/ \\_/ \\_/     \\_____/ \\_/ \\_/ \\_____/", print_count);
+  wattroff(game_win.win, COLOR_PAIR(white_pair));
 
-  // calculate the amount to print for the menu item text
   char menu_item[16] = "> ";
-  to_print = 10;
+  print_count = 10;
 
   if(window_width < 16)
   {
-    to_remove = 16 - window_width;
-    to_print -= to_remove;
+    remove_count = 16 - window_width;
+    print_count -= remove_count;
   }
 
   for(i32 i = 0; i < menu_item_amount; i++)
@@ -300,45 +295,45 @@ render_main_menu()
     {
       strcpy(menu_item + 2, menu_items[i]);
 
-      wattron(game_win, COLOR_PAIR(blue_pair));
-      mvwaddnstr(game_win, 10, 6, menu_item, to_print);
-      wattroff(game_win, COLOR_PAIR(blue_pair));
+      wattron(game_win.win, COLOR_PAIR(blue_pair));
+      mvwaddnstr(game_win.win, 10, 6, menu_item, print_count);
+      wattroff(game_win.win, COLOR_PAIR(blue_pair));
 
-      wattron(game_win, COLOR_PAIR(white_pair));
-      mvwaddnstr(game_win, 11, 8, menu_items[1], to_print - 2);
+      wattron(game_win.win, COLOR_PAIR(white_pair));
+      mvwaddnstr(game_win.win, 11, 8, menu_items[1], print_count - 2);
 
-      mvwaddnstr(game_win, 12, 8, menu_items[2], to_print - 2);
-      wattroff(game_win, COLOR_PAIR(white_pair));
+      mvwaddnstr(game_win.win, 12, 8, menu_items[2], print_count - 2);
+      wattroff(game_win.win, COLOR_PAIR(white_pair));
     }
     else if(i == highlighted && highlighted == 1)
     {
       strcpy(menu_item + 2, menu_items[i]);
 
-      wattron(game_win, COLOR_PAIR(white_pair));
-      mvwaddnstr(game_win, 10, 8, menu_items[0], to_print - 2);
-      wattroff(game_win, COLOR_PAIR(white_pair));
+      wattron(game_win.win, COLOR_PAIR(white_pair));
+      mvwaddnstr(game_win.win, 10, 8, menu_items[0], print_count - 2);
+      wattroff(game_win.win, COLOR_PAIR(white_pair));
 
-      wattron(game_win, COLOR_PAIR(blue_pair));
-      mvwaddnstr(game_win, 11, 6, menu_item, to_print);
-      wattroff(game_win, COLOR_PAIR(blue_pair));
+      wattron(game_win.win, COLOR_PAIR(blue_pair));
+      mvwaddnstr(game_win.win, 11, 6, menu_item, print_count);
+      wattroff(game_win.win, COLOR_PAIR(blue_pair));
 
-      wattron(game_win, COLOR_PAIR(white_pair));
-      mvwaddnstr(game_win, 12, 8, menu_items[2], to_print - 2);
-      wattroff(game_win, COLOR_PAIR(white_pair));
+      wattron(game_win.win, COLOR_PAIR(white_pair));
+      mvwaddnstr(game_win.win, 12, 8, menu_items[2], print_count - 2);
+      wattroff(game_win.win, COLOR_PAIR(white_pair));
     }
     else if(i == highlighted && highlighted == 2)
     {
       strcpy(menu_item + 2, menu_items[i]);
 
-      wattron(game_win, COLOR_PAIR(white_pair));
-      mvwaddnstr(game_win, 10, 8, menu_items[0], to_print - 2);
+      wattron(game_win.win, COLOR_PAIR(white_pair));
+      mvwaddnstr(game_win.win, 10, 8, menu_items[0], print_count - 2);
 
-      mvwaddnstr(game_win, 11, 8, menu_items[1], to_print - 2);
-      wattroff(game_win, COLOR_PAIR(white_pair));
+      mvwaddnstr(game_win.win, 11, 8, menu_items[1], print_count - 2);
+      wattroff(game_win.win, COLOR_PAIR(white_pair));
 
-      wattron(game_win, COLOR_PAIR(blue_pair));
-      mvwaddnstr(game_win, 12, 6, menu_item, to_print);
-      wattroff(game_win, COLOR_PAIR(blue_pair));
+      wattron(game_win.win, COLOR_PAIR(blue_pair));
+      mvwaddnstr(game_win.win, 12, 6, menu_item, print_count);
+      wattroff(game_win.win, COLOR_PAIR(blue_pair));
     }
   }
 }
@@ -348,7 +343,7 @@ update_main_menu()
 {
   i32 result = state_count;
 
-  input = wgetch(game_win);
+  input = wgetch(game_win.win);
   switch(input)
   {
     case KEY_UP:
@@ -392,37 +387,47 @@ update_main_menu()
 internal void
 render_controls()
 {
-  werase(game_win);
+  i32 window_width = getmaxx(game_win.win);
+  i32 print_count = 63;
+  i32 remove_count = 0;
 
-  wattron(game_win, COLOR_PAIR(white_pair));
-  mvwaddstr(game_win, 1, 8, " _   _   _____   _       _____");
-  mvwaddstr(game_win, 2, 8, "| | | | |  ___| | |     /  __ \\");
-  mvwaddstr(game_win, 3, 8, "| |_| | | |__   | |     | |_/ /");
-  mvwaddstr(game_win, 4, 8, "|  _  | |  __|  | |     |  __/");
-  mvwaddstr(game_win, 5, 8, "| | | | | |___  | |____ | |");
-  mvwaddstr(game_win, 6, 8, "\\_| |_/ \\____/  \\_____/ \\_/");
+  if(window_width < 71)
+  {
+    remove_count = 71 - window_width;
+    print_count -= remove_count;
+  }
 
-  mvwaddstr(game_win, 10, 8, "NPONG is a Pong clone made using ncurses");
-  mvwaddstr(game_win, 12, 8, "Player 1: up and down using \"w\" and \"s\"");
-  mvwaddstr(game_win, 13, 8, "Player 2: up and down using arrow keys");
-  mvwaddstr(game_win, 15, 8, "You can press 'q' to exit the game if needed ingame");
-  mvwaddstr(game_win, 17, 8, "First player to score 5 points wins");
-  wattroff(game_win, COLOR_PAIR(white_pair));
+  wattron(game_win.win, COLOR_PAIR(white_pair));
+  mvwaddnstr(game_win.win, 1, 8, " _____   _____   _   _   _____   _____   _____   _      ______", print_count);
+  mvwaddnstr(game_win.win, 2, 8, "/  __ \\ /  _  \\ / \\ / \\ /_   _\\ /  _  \\ /  _  \\ / |    /  ____\\", print_count);
+  mvwaddnstr(game_win.win, 3, 8, "| /  \\/ | | | | |  \\| |   | |   | |_| / | | | | | |    | |____", print_count);
+  mvwaddnstr(game_win.win, 4, 8, "| |     | | | | | . ` |   | |   |    /  | | | | | |    \\____  \\", print_count);
+  mvwaddnstr(game_win.win, 5, 8, "| \\__/\\ | |_| | | |\\  |   | |   | |\\ \\  | |_| | | |___ _____| |", print_count);
+  mvwaddnstr(game_win.win, 6, 8, "\\_____/ \\_____/ \\_/ \\_/   \\_/   \\_/ \\_/ \\_____/ \\____/ \\______/", print_count);
 
-  wgetch(game_win);
+  print_count = 46;
+  if(window_width < 54)
+  {
+    remove_count = 54 - window_width;
+    print_count -= remove_count;
+  }
+
+  mvwaddnstr(game_win.win, 10, 8, "Player 1: up and down using \"w\" and \"s\"", print_count);
+  mvwaddnstr(game_win.win, 11, 8, "Player 2: up and down using arrow keys", print_count);
+  mvwaddnstr(game_win.win, 13, 8, "You can press Q to quit the game while playing", print_count);
+  mvwaddnstr(game_win.win, 15, 8, "First player to score 5 points wins", print_count);
+  wattroff(game_win.win, COLOR_PAIR(white_pair));
 }
 
 internal void
-render_score_window()
+render_score()
 {
-  wattron(score_win, COLOR_PAIR(white_pair));
-  wresize(score_win, score_win_h, score_win_w);
-  box(score_win, 0, 0);
-
-  mvwprintw(score_win, 1, 1, "Player 1: %d", player_one.score);
-  mvwprintw(score_win, 1, 48, "Player 2: %d", player_two.score);
-
-  wattroff(score_win, COLOR_PAIR(white_pair));
+  wattron(score_win.win, COLOR_PAIR(white_pair));
+  wresize(score_win.win, score_win.h, score_win.w);
+  box(score_win.win, 0, 0);
+  mvwprintw(score_win.win, 1, 1, "Player 1: %d", player_one.score);
+  mvwprintw(score_win.win, 1, 63, "Player 2: %d", player_two.score);
+  wattroff(score_win.win, COLOR_PAIR(white_pair));
 }
 
 internal void
@@ -448,7 +453,7 @@ update_players()
     case 'S':
     case 's':
     {
-      if((player_one.y + player_one.h) < (game_win_h - 1))
+      if((player_one.y + player_one.h) < (game_win.h - 1))
       {
         player_one.y++;
       }
@@ -464,7 +469,7 @@ update_players()
 
     case KEY_DOWN:
     {
-      if((player_two.y + player_two.h) < (game_win_h - 1))
+      if((player_two.y + player_two.h) < (game_win.h - 1))
       {
         player_two.y++;
       }
@@ -475,63 +480,32 @@ update_players()
 internal void
 render_arena()
 {
-  // corners
-  wattron(game_win, COLOR_PAIR(white_pair));
-  mvwaddstr(game_win, 0, 0, "+");
-  mvwaddstr(game_win, 0, game_win_w - 1, "+");
-  mvwaddstr(game_win, game_win_h - 1, 0, "+");
-  mvwaddstr(game_win, game_win_h - 1, game_win_w - 1, "+");
-
-  // left / right border
-  for(i32 y = 1; y < game_win_h - 1; y++)
-  {
-    mvwaddstr(game_win, y, 0, "|");
-    mvwaddstr(game_win, y, game_win_w - 1, "|");
-  }
-
-  // top / bottom border
-  for(i32 x = 1; x < game_win_w - 1; x++)
-  {
-    mvwaddstr(game_win, 0, x, "-");
-    mvwaddstr(game_win, game_win_h - 1, x, "-");
-  }
-
-  wattroff(game_win, COLOR_PAIR(white_pair));
+  wattron(game_win.win, COLOR_PAIR(white_pair));
+  wresize(game_win.win, game_win.h, game_win.w);
+  box(game_win.win, 0, 0);
+  wattroff(game_win.win, COLOR_PAIR(white_pair));
 }
 
 internal void
-render_victory_screen(i32 winner)
+render_victory(i32 winner)
 {
-  nodelay(game_win, 0);
+  nodelay(game_win.win, 0);
 
-  werase(game_win);
-  werase(score_win);
+  werase(game_win.win);
+  werase(score_win.win);
+  wattron(game_win.win, COLOR_PAIR(white_pair));
 
-  wattron(game_win, COLOR_PAIR(white_pair));
-  mvwprintw(game_win, 5, game_win_w / 2, "Player %d wins!", winner);
-  mvwaddstr(game_win, 10, 26, "[Q] for main menu");
-  mvwaddstr(game_win, 11, 26, "[R] for a rematch");
+  mvwprintw(game_win.win, 5, 30, "Player %d wins!", winner);
+  mvwaddstr(game_win.win, 11, 26, "[R] Rematch");
+  mvwaddstr(game_win.win, 12, 26, "[Q] Main Menu");
 
-  for(i32 y = 3; y < 8; y++)
-  {
-    mvwaddstr(game_win, y, (game_win_w / 2) - 4, "|");
-    mvwaddstr(game_win, y, (game_win_w / 2) + 17, "|");
-  }
-
-  for(i32 x = 26; x < 48; x++)
-  {
-    mvwaddstr(game_win, 2, x, "-");
-    mvwaddstr(game_win, 8, x, "-");
-  }
-
-  wattroff(game_win, COLOR_PAIR(white_pair));
-  wrefresh(game_win);
-  wrefresh(score_win);
+  wattroff(game_win.win, COLOR_PAIR(white_pair));
+  wrefresh(game_win.win);
+  wrefresh(score_win.win);
 
   while(1)
   {
-    i32 input = wgetch(game_win);
-
+    i32 input = wgetch(game_win.win);
     if(input == 'Q' || input == 'q')
     {
       game.state = state_main_menu;
@@ -539,14 +513,14 @@ render_victory_screen(i32 winner)
     }
     else if(input == 'R' || input == 'r')
     {
-      nodelay(game_win, 1);
+      nodelay(game_win.win, 1);
       break;
     }
   }
 
-  player_one.y = (game_win_h / 2) - 2;
+  player_one.y = (game_win.h / 2) - 2;
   player_one.score = 0;
-  player_two.y = (game_win_h / 2) - 2;
+  player_two.y = (game_win.h / 2) - 2;
   player_two.score = 0;
 }
 
@@ -557,14 +531,14 @@ run_game()
   {
     if(game.state == state_main_menu)
     {
-      werase(game_win);
+      werase(game_win.win);
 
-      render_main_menu(game_win);
-      i32 result = update_main_menu(game_win);
+      render_main_menu(game_win.win);
+      i32 result = update_main_menu(game_win.win);
 
       if(result == state_play)
       {
-        nodelay(game_win, 1);
+        nodelay(game_win.win, 1);
         game.state = state_play;
       }
       else if(result == state_controls)
@@ -576,13 +550,13 @@ run_game()
         game.state = state_quit;
       }
 
-      wrefresh(game_win);
+      wrefresh(game_win.win);
     }
     else if(game.state == state_play)
     {
-      key_pressed = wgetch(game_win);
-      werase(game_win);
-      werase(score_win);
+      key_pressed = wgetch(game_win.win);
+      werase(game_win.win);
+      werase(score_win.win);
 
       update_players();
       i32 winner = update_ball();
@@ -590,16 +564,28 @@ run_game()
       render_arena();
       render_players();
       render_ball();
-      render_score_window();
-      if(winner){render_victory_screen(winner);}
+      render_score();
 
-      wrefresh(game_win);
-      wrefresh(score_win);
+      if(winner)
+      {
+        render_victory(winner);
+      }
+
+      wrefresh(game_win.win);
+      wrefresh(score_win.win);
     }
     else if(game.state == state_controls)
     {
-      render_controls(game_win);
-      game.state = state_main_menu;
+      werase(game_win.win);
+
+      render_controls(game_win.win);
+
+      if(wgetch(game_win.win) == key_enter)
+      {
+        game.state = state_main_menu;
+      }
+
+      wrefresh(game_win.win);
     }
   }
 }
@@ -640,15 +626,21 @@ init_game()
   init_pair(cyan_pair, COLOR_CYAN, COLOR_CYAN);
   init_pair(white_pair, COLOR_WHITE, COLOR_CYAN);
 
-  game_win = newwin(game_win_h, game_win_w, game_win_y, game_win_x);
-  score_win = newwin(score_win_h, score_win_w, 0, 0);
+  game_win.y = 3;
+  game_win.w = 75;
+  game_win.h = 20;
+  game_win.win = newwin(game_win.h, game_win.w, game_win.y, game_win.x);
+
+  score_win.w = 75;
+  score_win.h = 3;
+  score_win.win = newwin(score_win.h, score_win.w, score_win.y, score_win.x);
 
   wbkgd(stdscr, COLOR_PAIR(cyan_pair));
-  wbkgd(game_win, COLOR_PAIR(cyan_pair));
-  wbkgd(score_win, COLOR_PAIR(cyan_pair));
+  wbkgd(game_win.win, COLOR_PAIR(cyan_pair));
+  wbkgd(score_win.win, COLOR_PAIR(cyan_pair));
 
-  keypad(game_win, 1);  // enable F1, F2, arrow keys etc.
-  nodelay(game_win, 0); // getch will block execution
+  keypad(game_win.win, 1);  // enable F1, F2, arrow keys etc.
+  nodelay(game_win.win, 0); // getch will block execution
   wrefresh(stdscr);
 
   player_one.x = 2;
@@ -658,7 +650,7 @@ init_game()
   player_one.glyph = '|';
   player_one.can_add_speed = 1;
 
-  player_two.x = 57;
+  player_two.x = 72;
   player_two.y = 8;
   player_two.w = 1;
   player_two.h = 4;
@@ -666,8 +658,8 @@ init_game()
   player_two.can_add_speed = 1;
 
   ball.glyph = 'O';
-  ball.x = game_win_w / 2;
-  ball.y = game_win_y / 2;
+  ball.x = game_win.w / 2;
+  ball.y = game_win.y / 2;
   ball.vx = 0.0002;
   ball.vy = 0.0002;
 
