@@ -264,34 +264,34 @@ internal void
 render_main_menu()
 {
   // calculate the amount to print for the title text
-  i32 current_width = getmaxx(game_win);
-  i32 amount_to_remove = 0;
-  i32 amount_to_print = 44;
+  i32 window_width = getmaxx(game_win);
+  i32 to_remove = 0;
+  i32 to_print = 44;
 
-  if(current_width < 52)
+  if(window_width < 52)
   {
-    amount_to_remove = 52 - current_width;
-    amount_to_print = amount_to_print - amount_to_remove;
+    to_remove = 52 - window_width;
+    to_print = to_print - to_remove;
   }
 
   // render game title
   wattron(game_win, COLOR_PAIR(white_pair));
-  mvwaddnstr(game_win, 1, 8, " _   _   _____   _____   _   _   _____ ", amount_to_print);
-  mvwaddnstr(game_win, 2, 8, "/ \\ / \\ /  __ \\ /  _  \\ / \\ / \\ /  __ \\", amount_to_print);
-  mvwaddnstr(game_win, 3, 8, "|  \\| | | /_/ | | | | | |  \\  | | |  \\/", amount_to_print);
-  mvwaddnstr(game_win, 4, 8, "| . ` | |  __/  | | | | | . ` | | | ___", amount_to_print);
-  mvwaddnstr(game_win, 5, 8, "| |\\  | | |     | |_| | | |\\  | | |_| |", amount_to_print);
-  mvwaddnstr(game_win, 6, 8, "\\_/ \\_/ \\_/     \\_____/ \\_/ \\_/ \\_____/", amount_to_print);
+  mvwaddnstr(game_win, 1, 8, " _   _   _____   _____   _   _   _____ ", to_print);
+  mvwaddnstr(game_win, 2, 8, "/ \\ / \\ /  __ \\ /  _  \\ / \\ / \\ /  __ \\", to_print);
+  mvwaddnstr(game_win, 3, 8, "|  \\| | | /_/ | | | | | |  \\  | | |  \\/", to_print);
+  mvwaddnstr(game_win, 4, 8, "| . ` | |  __/  | | | | | . ` | | | ___", to_print);
+  mvwaddnstr(game_win, 5, 8, "| |\\  | | |     | |_| | | |\\  | | |_| |", to_print);
+  mvwaddnstr(game_win, 6, 8, "\\_/ \\_/ \\_/     \\_____/ \\_/ \\_/ \\_____/", to_print);
   wattroff(game_win, COLOR_PAIR(white_pair));
 
   // calculate the amount to print for the menu item text
   char menu_item[16] = "> ";
-  amount_to_print = 10;
+  to_print = 10;
 
-  if(current_width < 16)
+  if(window_width < 16)
   {
-    amount_to_remove = 16 - current_width;
-    amount_to_print -= amount_to_remove;
+    to_remove = 16 - window_width;
+    to_print -= to_remove;
   }
 
   for(i32 i = 0; i < menu_item_amount; i++)
@@ -301,13 +301,13 @@ render_main_menu()
       strcpy(menu_item + 2, menu_items[i]);
 
       wattron(game_win, COLOR_PAIR(blue_pair));
-      mvwaddnstr(game_win, 10, 6, menu_item, amount_to_print);
+      mvwaddnstr(game_win, 10, 6, menu_item, to_print);
       wattroff(game_win, COLOR_PAIR(blue_pair));
 
       wattron(game_win, COLOR_PAIR(white_pair));
-      mvwaddnstr(game_win, 11, 8, menu_items[1], amount_to_print - 2);
+      mvwaddnstr(game_win, 11, 8, menu_items[1], to_print - 2);
 
-      mvwaddnstr(game_win, 12, 8, menu_items[2], amount_to_print - 2);
+      mvwaddnstr(game_win, 12, 8, menu_items[2], to_print - 2);
       wattroff(game_win, COLOR_PAIR(white_pair));
     }
     else if(i == highlighted && highlighted == 1)
@@ -315,15 +315,15 @@ render_main_menu()
       strcpy(menu_item + 2, menu_items[i]);
 
       wattron(game_win, COLOR_PAIR(white_pair));
-      mvwaddnstr(game_win, 10, 8, menu_items[0], amount_to_print - 2);
+      mvwaddnstr(game_win, 10, 8, menu_items[0], to_print - 2);
       wattroff(game_win, COLOR_PAIR(white_pair));
 
       wattron(game_win, COLOR_PAIR(blue_pair));
-      mvwaddnstr(game_win, 11, 6, menu_item, amount_to_print);
+      mvwaddnstr(game_win, 11, 6, menu_item, to_print);
       wattroff(game_win, COLOR_PAIR(blue_pair));
 
       wattron(game_win, COLOR_PAIR(white_pair));
-      mvwaddnstr(game_win, 12, 8, menu_items[2], amount_to_print - 2);
+      mvwaddnstr(game_win, 12, 8, menu_items[2], to_print - 2);
       wattroff(game_win, COLOR_PAIR(white_pair));
     }
     else if(i == highlighted && highlighted == 2)
@@ -331,13 +331,13 @@ render_main_menu()
       strcpy(menu_item + 2, menu_items[i]);
 
       wattron(game_win, COLOR_PAIR(white_pair));
-      mvwaddnstr(game_win, 10, 8, menu_items[0], amount_to_print - 2);
+      mvwaddnstr(game_win, 10, 8, menu_items[0], to_print - 2);
 
-      mvwaddnstr(game_win, 11, 8, menu_items[1], amount_to_print - 2);
+      mvwaddnstr(game_win, 11, 8, menu_items[1], to_print - 2);
       wattroff(game_win, COLOR_PAIR(white_pair));
 
       wattron(game_win, COLOR_PAIR(blue_pair));
-      mvwaddnstr(game_win, 12, 6, menu_item, amount_to_print);
+      mvwaddnstr(game_win, 12, 6, menu_item, to_print);
       wattroff(game_win, COLOR_PAIR(blue_pair));
     }
   }
@@ -578,8 +578,7 @@ run_game()
 
       wrefresh(game_win);
     }
-
-    if(game.state == state_play)
+    else if(game.state == state_play)
     {
       key_pressed = wgetch(game_win);
       werase(game_win);
@@ -597,8 +596,7 @@ run_game()
       wrefresh(game_win);
       wrefresh(score_win);
     }
-
-    if(game.state == state_controls)
+    else if(game.state == state_controls)
     {
       render_controls(game_win);
       game.state = state_main_menu;
