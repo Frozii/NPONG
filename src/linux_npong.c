@@ -1,3 +1,6 @@
+#define _DEFAULT_SOURCE
+#include <unistd.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -71,11 +74,10 @@ typedef struct
   i32 flag_x;
   i32 flag_y;
   char glyph;
-  // NOTE(Rami): Turn into i32
-  r32 x;
-  r32 y;
-  r32 vx;
-  r32 vy;
+  i32 x;
+  i32 y;
+  i32 x_speed;
+  i32 y_speed;
 } ball_t;
 
 typedef struct
@@ -116,146 +118,193 @@ internal void
 render_players()
 {
   wattron(game_win.win, COLOR_PAIR(white_pair));
-  for(i32 y = 0; y < player_one.h; y++) {mvwprintw(game_win.win, player_one.y + y, player_one.x, "%c", player_one.glyph);}
-  for(i32 y = 0; y < player_two.h; y++) {mvwprintw(game_win.win, player_two.y + y, player_two.x, "%c", player_two.glyph);}
+
+  for(i32 y = 0;y < player_one.h; y++)
+  {
+    mvwprintw(game_win.win, player_one.y + y, player_one.x, "%c", player_one.glyph);
+  }
+
+  for(i32 y = 0; y < player_two.h; y++)
+  {
+    mvwprintw(game_win.win, player_two.y + y, player_two.x, "%c", player_two.glyph);
+  }
+
   wattroff(game_win.win, COLOR_PAIR(white_pair));
 }
 
 internal i32
 update_ball()
 {
-  /*
-   * ball.flag_x:
-   * 0 = left, 1 = right
-   *
-   * ball.flag_y:
-   * 0 = up, 1 = down
-   */
-  
-  i32 winner = 0;
-
-  // move the ball
-  if(ball.flag_x == 0)
+  if(ball.flag_x == 1)
   {
-    ball.x -= ball.vx;
+    ball.x += ball.x_speed;
   }
-  else if(ball.flag_x == 1)
+  else if(ball.flag_x == 0)
   {
-    ball.x += ball.vx;
+    ball.x -= ball.x_speed;
   }
 
-  if(ball.flag_y == 0)
+  if(ball.flag_y == 1)
   {
-    ball.y -= ball.vy;
+    ball.y += ball.y_speed;
   }
-  else if(ball.flag_y == 1)
+  else if(ball.flag_y == 0)
   {
-    ball.y += ball.vy;
-  }
-
-  // check if the ball is past the screen on the x axis
-  if(ball.x < 1)
-  {
-    player_two.score++;
-
-    if(player_two.score >= 5)
-    {
-      winner = 2;
-    }
-
-    ball.flag_x = rand() % 2;
-    ball.flag_y = rand() % 2;
-    ball.x = game_win.w / 2;
-    ball.y = game_win.h / 2;
-    ball.vx = 0.0002;
-    ball.vy = 0.0002;
-    player_one.can_add_speed = 1;
-    player_two.can_add_speed = 1;
-  }
-  else if(ball.x > (game_win.w - 1))
-  {
-    player_one.score++;
-
-    if(player_one.score >= 5)
-    {
-      winner = 1;
-    }
-
-    ball.flag_x = rand() % 2;
-    ball.flag_y = rand() % 2;
-    ball.x = game_win.w / 2;
-    ball.y = game_win.h / 2;
-    ball.vx = 0.0002;
-    ball.vy = 0.0002;
-    player_one.can_add_speed = 1;
-    player_two.can_add_speed = 1;
+    ball.y -= ball.y_speed;
   }
 
-  // check if the ball is past the screen on the y axis
-  if(ball.y < 1)
+  if(ball.x <= 1)
+  {
+    ball.flag_x = 1;
+  }
+  else if(ball.x >= (game_win.w - 2))
+  {
+    ball.flag_x = 0;
+  }
+
+  if(ball.y <= 1)
   {
     ball.flag_y = 1;
   }
-  else if(ball.y > game_win.h - 1)
+  else if(ball.y >= (game_win.h - 2))
   {
     ball.flag_y = 0;
   }
 
-  // player one to ball collision
-  if(ball.x > player_one.x && ball.x < player_one.x + 1 && ball.y > player_one.y - 1 && ball.y < (player_one.y + player_one.h))
-  {
-    // reverse x
-    if(ball.flag_x == 1)
-    {
-      ball.flag_x = 0;
-    }
-    else if(ball.flag_x == 0)
-    {
-      ball.flag_x = 1;
-    }
+  // ball.x -= 1;
+  return 0;
+  // /*
+  //  * ball.flag_x:
+  //  * 0 = left, 1 = right
+  //  *
+  //  * ball.flag_y:
+  //  * 0 = up, 1 = down
+  //  */
+  
+  // i32 winner = 0;
 
-    if(player_one.can_add_speed == 1)
-    {
-      // add speed to the ball if it's below the max
-      if(ball.vx && ball.vy < 0.002)
-      {
-        ball.vx += 0.0001;
-        ball.vy += 0.0001;
-      }
+  // // move the ball
+  // if(ball.flag_x == 0)
+  // {
+  //   ball.x -= ball.x_speed;
+  // }
+  // else if(ball.flag_x == 1)
+  // {
+  //   ball.x += ball.x_speed;
+  // }
 
-      player_one.can_add_speed = 0;
-      player_two.can_add_speed = 1;
-    }
-  }
+  // if(ball.flag_y == 0)
+  // {
+  //   ball.y -= ball.y_speed;
+  // }
+  // else if(ball.flag_y == 1)
+  // {
+  //   ball.y += ball.y_speed;
+  // }
 
-  // player two to ball collision
-  if(ball.x < player_two.x && ball.x > player_two.x - 1 && ball.y > player_two.y - 1 && ball.y < (player_two.y + player_two.h))
-  {
-    // reverse x
-    if(ball.flag_x == 1)
-    {
-      ball.flag_x = 0;
-    }
-    else if(ball.flag_x == 0)
-    {
-      ball.flag_x = 1;
-    }
+  // // check if the ball is past the screen on the x axis
+  // if(ball.x < 1)
+  // {
+  //   player_two.score++;
 
-    if(player_two.can_add_speed == 1)
-    {
-      // add speed to the ball if it's below the max
-      if(ball.vx && ball.vy < 0.002)
-      {
-        ball.vx += 0.0001;
-        ball.vy += 0.0001;
-      }
+  //   if(player_two.score >= 5)
+  //   {
+  //     winner = 2;
+  //   }
 
-      player_one.can_add_speed = 1;
-      player_two.can_add_speed = 0;
-    }
-  }
+  //   ball.flag_x = rand() % 2;
+  //   ball.flag_y = rand() % 2;
+  //   ball.x = game_win.w / 2;
+  //   ball.y = game_win.h / 2;
+  //   ball.x_speed = 0.0002;
+  //   ball.y_speed = 0.0002;
+  //   player_one.can_add_speed = 1;
+  //   player_two.can_add_speed = 1;
+  // }
+  // else if(ball.x > (game_win.w - 1))
+  // {
+  //   player_one.score++;
 
-  return winner;
+  //   if(player_one.score >= 5)
+  //   {
+  //     winner = 1;
+  //   }
+
+  //   ball.flag_x = rand() % 2;
+  //   ball.flag_y = rand() % 2;
+  //   ball.x = game_win.w / 2;
+  //   ball.y = game_win.h / 2;
+  //   ball.x_speed = 0.0002;
+  //   ball.y_speed = 0.0002;
+  //   player_one.can_add_speed = 1;
+  //   player_two.can_add_speed = 1;
+  // }
+
+  // // check if the ball is past the screen on the y axis
+  // if(ball.y < 1)
+  // {
+  //   ball.flag_y = 1;
+  // }
+  // else if(ball.y > game_win.h - 1)
+  // {
+  //   ball.flag_y = 0;
+  // }
+
+  // // player one to ball collision
+  // if(ball.x > player_one.x && ball.x < player_one.x + 1 && ball.y > player_one.y - 1 && ball.y < (player_one.y + player_one.h))
+  // {
+  //   // reverse x
+  //   if(ball.flag_x == 1)
+  //   {
+  //     ball.flag_x = 0;
+  //   }
+  //   else if(ball.flag_x == 0)
+  //   {
+  //     ball.flag_x = 1;
+  //   }
+
+  //   if(player_one.can_add_speed == 1)
+  //   {
+  //     // add speed to the ball if it's below the max
+  //     if(ball.x_speed && ball.y_speed < 0.002)
+  //     {
+  //       ball.x_speed += 0.0001;
+  //       ball.y_speed += 0.0001;
+  //     }
+
+  //     player_one.can_add_speed = 0;
+  //     player_two.can_add_speed = 1;
+  //   }
+  // }
+
+  // // player two to ball collision
+  // if(ball.x < player_two.x && ball.x > player_two.x - 1 && ball.y > player_two.y - 1 && ball.y < (player_two.y + player_two.h))
+  // {
+  //   // reverse x
+  //   if(ball.flag_x == 1)
+  //   {
+  //     ball.flag_x = 0;
+  //   }
+  //   else if(ball.flag_x == 0)
+  //   {
+  //     ball.flag_x = 1;
+  //   }
+
+  //   if(player_two.can_add_speed == 1)
+  //   {
+  //     // add speed to the ball if it's below the max
+  //     if(ball.x_speed && ball.y_speed < 0.002)
+  //     {
+  //       ball.x_speed += 0.0001;
+  //       ball.y_speed += 0.0001;
+  //     }
+
+  //     player_one.can_add_speed = 1;
+  //     player_two.can_add_speed = 0;
+  //   }
+  // }
+
+  // return winner;
 }
 
 internal void
@@ -519,8 +568,8 @@ render_victory(i32 winner)
   }
 
   player_one.y = (game_win.h / 2) - 2;
-  player_one.score = 0;
   player_two.y = (game_win.h / 2) - 2;
+  player_one.score = 0;
   player_two.score = 0;
 }
 
@@ -573,6 +622,9 @@ run_game()
 
       wrefresh(game_win.win);
       wrefresh(score_win.win);
+
+      // NOTE(Rami):
+      usleep(64000);
     }
     else if(game.state == state_controls)
     {
@@ -580,7 +632,8 @@ run_game()
 
       render_controls(game_win.win);
 
-      if(wgetch(game_win.win) == key_enter)
+      i32 input = wgetch(game_win.win);
+      if(input == key_enter)
       {
         game.state = state_main_menu;
       }
@@ -659,9 +712,13 @@ init_game()
 
   ball.glyph = 'O';
   ball.x = game_win.w / 2;
-  ball.y = game_win.y / 2;
-  ball.vx = 0.0002;
-  ball.vy = 0.0002;
+  ball.y = game_win.h / 2;
+  ball.x_speed = 1;
+  ball.y_speed = 1;
+
+  // NOTE(Rami): rand these I guess
+  ball.flag_x = 0;
+  ball.flag_y = 0;
 
   return 1;
 }
