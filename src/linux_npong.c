@@ -45,17 +45,32 @@ enum
 
 typedef enum
 {
+
   state_main_menu,
   state_play,
   state_controls,
   state_quit,
 
-  state_count
+  state_none,
 } game_state_e;
+
+enum
+{
+  dir_up = 0,
+  dir_down = 1,
+  dir_left = 0,
+  dir_right = 1
+};
 
 typedef struct
 {
   game_state_e state;
+  i32 input;
+  i32 winner;
+  i32 sleep_high_limit;
+  i32 sleep_low_limit;
+  i32 sleep_current;
+  i32 sleep_change;
 } game_t;
 
 typedef struct
@@ -66,18 +81,16 @@ typedef struct
   i32 h;
   i32 glyph;
   i32 score;
-  i32 can_add_speed;
 } player_t;
 
 typedef struct
 {
-  i32 flag_x;
-  i32 flag_y;
-  char glyph;
   i32 x;
   i32 y;
-  i32 x_speed;
-  i32 y_speed;
+  i32 x_dir;
+  i32 y_dir;
+  i32 glyph;
+  i32 speed;
 } ball_t;
 
 typedef struct
@@ -89,9 +102,6 @@ typedef struct
   i32 h;
 } window_t;
 
-// NOTE(Rami): 
-i32 key_pressed;
-i32 input;
 i32 highlighted;
 i32 menu_item_amount = 3;
 char *menu_items[] = {"Play", "Controls", "Quit"};
@@ -106,6 +116,19 @@ global player_t player_two;
 
 global ball_t ball;
 
+internal i32
+rnum(i32 min, i32 max)
+{
+  if(min > max)
+  {
+    i32 temp = max;
+    max = min;
+    min = temp;
+  }
+
+  return min + rand() % (max - min + 1);
+}
+
 internal void
 render_ball()
 {
@@ -115,11 +138,11 @@ render_ball()
 }
 
 internal void
-render_players()
+render_player()
 {
   wattron(game_win.win, COLOR_PAIR(white_pair));
 
-  for(i32 y = 0;y < player_one.h; y++)
+  for(i32 y = 0; y < player_one.h; y++)
   {
     mvwprintw(game_win.win, player_one.y + y, player_one.x, "%c", player_one.glyph);
   }
@@ -132,179 +155,95 @@ render_players()
   wattroff(game_win.win, COLOR_PAIR(white_pair));
 }
 
-internal i32
+internal void
+reset_ball()
+{
+  ball.x = game_win.w / 2;
+  ball.y = game_win.h / 2;
+  ball.x_dir = rnum(dir_left, dir_right);
+  ball.y_dir = rnum(dir_up, dir_down);
+
+  // Since the rate at which the game gets updated depends on game.sleep_value
+  // and that directly affects the ball, we will reset game.sleep_value here
+
+  game.sleep_current = game.sleep_high_limit;
+}
+
+internal void
 update_ball()
 {
-  if(ball.flag_x == 1)
+  // Player collision
+  if((ball.x - 1) == player_one.x &&
+     (ball.y >= player_one.y &&
+      ball.y <= (player_one.y + player_one.h - 1)))
   {
-    ball.x += ball.x_speed;
-  }
-  else if(ball.flag_x == 0)
-  {
-    ball.x -= ball.x_speed;
-  }
+    ball.x_dir = dir_right;
 
-  if(ball.flag_y == 1)
-  {
-    ball.y += ball.y_speed;
+    if(game.sleep_current > game.sleep_low_limit)
+    {
+      game.sleep_current -= game.sleep_change;
+    }
   }
-  else if(ball.flag_y == 0)
+  else if((ball.x + 1) == player_two.x &&
+          (ball.y >= player_two.y &&
+          ball.y <= (player_two.y + player_one.h - 1)))
   {
-    ball.y -= ball.y_speed;
-  }
+    ball.x_dir = dir_left;
 
-  if(ball.x <= 1)
-  {
-    ball.flag_x = 1;
-  }
-  else if(ball.x >= (game_win.w - 2))
-  {
-    ball.flag_x = 0;
+    if(game.sleep_current > game.sleep_low_limit)
+    {
+      game.sleep_current -= game.sleep_change;
+    }
   }
 
-  if(ball.y <= 1)
+  // Wall collision
+  if(ball.x < 2)
   {
-    ball.flag_y = 1;
+    reset_ball();
+
+    player_two.score++;
+    if(player_two.score >= 5)
+    {
+      game.winner = 2;
+    }
   }
-  else if(ball.y >= (game_win.h - 2))
+  else if(ball.x > (game_win.w - 3))
   {
-    ball.flag_y = 0;
+    reset_ball();
+
+    player_one.score++;
+    if(player_one.score >= 5)
+    {
+      game.winner = 1;
+    }
+  }
+  else if(ball.y < 2)
+  {
+    ball.y_dir = dir_down;
+  }
+  else if(ball.y > (game_win.h - 3))
+  {
+    ball.y_dir = dir_up;
   }
 
-  // ball.x -= 1;
-  return 0;
-  // /*
-  //  * ball.flag_x:
-  //  * 0 = left, 1 = right
-  //  *
-  //  * ball.flag_y:
-  //  * 0 = up, 1 = down
-  //  */
-  
-  // i32 winner = 0;
+  // Apply speed
+  if(ball.x_dir == dir_right)
+  {
+    ball.x += ball.speed;
+  }
+  else if(ball.x_dir == dir_left)
+  {
+    ball.x -= ball.speed;
+  }
 
-  // // move the ball
-  // if(ball.flag_x == 0)
-  // {
-  //   ball.x -= ball.x_speed;
-  // }
-  // else if(ball.flag_x == 1)
-  // {
-  //   ball.x += ball.x_speed;
-  // }
-
-  // if(ball.flag_y == 0)
-  // {
-  //   ball.y -= ball.y_speed;
-  // }
-  // else if(ball.flag_y == 1)
-  // {
-  //   ball.y += ball.y_speed;
-  // }
-
-  // // check if the ball is past the screen on the x axis
-  // if(ball.x < 1)
-  // {
-  //   player_two.score++;
-
-  //   if(player_two.score >= 5)
-  //   {
-  //     winner = 2;
-  //   }
-
-  //   ball.flag_x = rand() % 2;
-  //   ball.flag_y = rand() % 2;
-  //   ball.x = game_win.w / 2;
-  //   ball.y = game_win.h / 2;
-  //   ball.x_speed = 0.0002;
-  //   ball.y_speed = 0.0002;
-  //   player_one.can_add_speed = 1;
-  //   player_two.can_add_speed = 1;
-  // }
-  // else if(ball.x > (game_win.w - 1))
-  // {
-  //   player_one.score++;
-
-  //   if(player_one.score >= 5)
-  //   {
-  //     winner = 1;
-  //   }
-
-  //   ball.flag_x = rand() % 2;
-  //   ball.flag_y = rand() % 2;
-  //   ball.x = game_win.w / 2;
-  //   ball.y = game_win.h / 2;
-  //   ball.x_speed = 0.0002;
-  //   ball.y_speed = 0.0002;
-  //   player_one.can_add_speed = 1;
-  //   player_two.can_add_speed = 1;
-  // }
-
-  // // check if the ball is past the screen on the y axis
-  // if(ball.y < 1)
-  // {
-  //   ball.flag_y = 1;
-  // }
-  // else if(ball.y > game_win.h - 1)
-  // {
-  //   ball.flag_y = 0;
-  // }
-
-  // // player one to ball collision
-  // if(ball.x > player_one.x && ball.x < player_one.x + 1 && ball.y > player_one.y - 1 && ball.y < (player_one.y + player_one.h))
-  // {
-  //   // reverse x
-  //   if(ball.flag_x == 1)
-  //   {
-  //     ball.flag_x = 0;
-  //   }
-  //   else if(ball.flag_x == 0)
-  //   {
-  //     ball.flag_x = 1;
-  //   }
-
-  //   if(player_one.can_add_speed == 1)
-  //   {
-  //     // add speed to the ball if it's below the max
-  //     if(ball.x_speed && ball.y_speed < 0.002)
-  //     {
-  //       ball.x_speed += 0.0001;
-  //       ball.y_speed += 0.0001;
-  //     }
-
-  //     player_one.can_add_speed = 0;
-  //     player_two.can_add_speed = 1;
-  //   }
-  // }
-
-  // // player two to ball collision
-  // if(ball.x < player_two.x && ball.x > player_two.x - 1 && ball.y > player_two.y - 1 && ball.y < (player_two.y + player_two.h))
-  // {
-  //   // reverse x
-  //   if(ball.flag_x == 1)
-  //   {
-  //     ball.flag_x = 0;
-  //   }
-  //   else if(ball.flag_x == 0)
-  //   {
-  //     ball.flag_x = 1;
-  //   }
-
-  //   if(player_two.can_add_speed == 1)
-  //   {
-  //     // add speed to the ball if it's below the max
-  //     if(ball.x_speed && ball.y_speed < 0.002)
-  //     {
-  //       ball.x_speed += 0.0001;
-  //       ball.y_speed += 0.0001;
-  //     }
-
-  //     player_one.can_add_speed = 1;
-  //     player_two.can_add_speed = 0;
-  //   }
-  // }
-
-  // return winner;
+  if(ball.y_dir == dir_down)
+  {
+    ball.y += ball.speed;
+  }
+  else if(ball.y_dir == dir_up)
+  {
+    ball.y -= ball.speed;
+  }
 }
 
 internal void
@@ -390,10 +329,10 @@ render_main_menu()
 internal i32
 update_main_menu()
 {
-  i32 result = state_count;
+  i32 result = state_none;
 
-  input = wgetch(game_win.win);
-  switch(input)
+  game.input = wgetch(game_win.win);
+  switch(game.input)
   {
     case KEY_UP:
     {
@@ -482,7 +421,7 @@ render_score()
 internal void
 update_players()
 {
-  switch(key_pressed)
+  switch(game.input)
   {
     case 'Q':
     case 'q':
@@ -530,13 +469,15 @@ internal void
 render_arena()
 {
   wattron(game_win.win, COLOR_PAIR(white_pair));
+
   wresize(game_win.win, game_win.h, game_win.w);
   box(game_win.win, 0, 0);
+
   wattroff(game_win.win, COLOR_PAIR(white_pair));
 }
 
 internal void
-render_victory(i32 winner)
+render_victory()
 {
   nodelay(game_win.win, 0);
 
@@ -544,31 +485,41 @@ render_victory(i32 winner)
   werase(score_win.win);
   wattron(game_win.win, COLOR_PAIR(white_pair));
 
-  mvwprintw(game_win.win, 5, 30, "Player %d wins!", winner);
-  mvwaddstr(game_win.win, 11, 26, "[R] Rematch");
-  mvwaddstr(game_win.win, 12, 26, "[Q] Main Menu");
+  mvwprintw(game_win.win, 1, 26, "---------------------");
+  mvwprintw(game_win.win, 2, 26, "|                   |");
+  mvwprintw(game_win.win, 3, 26, "|                   |");
+  mvwprintw(game_win.win, 4, 26, "|                   |");
+  mvwprintw(game_win.win, 5, 26, "|                   |");
+  mvwprintw(game_win.win, 6, 26, "|                   |");
+  mvwprintw(game_win.win, 7, 26, "---------------------");
+
+  mvwprintw(game_win.win, 4, 30, "Player %d wins", game.winner);
+  mvwprintw(game_win.win, 10, 30, "[R] Rematch");
+  mvwprintw(game_win.win, 11, 30, "[Q] Main Menu");
 
   wattroff(game_win.win, COLOR_PAIR(white_pair));
   wrefresh(game_win.win);
   wrefresh(score_win.win);
 
-  while(1)
+  for(;;)
   {
-    i32 input = wgetch(game_win.win);
-    if(input == 'Q' || input == 'q')
+    game.input = wgetch(game_win.win);
+    if(game.input == 'Q' || game.input == 'q')
     {
       game.state = state_main_menu;
       break;
     }
-    else if(input == 'R' || input == 'r')
+    else if(game.input == 'R' || game.input == 'r')
     {
       nodelay(game_win.win, 1);
       break;
     }
   }
 
-  player_one.y = (game_win.h / 2) - 2;
-  player_two.y = (game_win.h / 2) - 2;
+  game.winner = 0;
+
+  player_one.y = (game_win.h / 2) - (player_one.h / 2);
+  player_two.y = (game_win.h / 2) - (player_two.h / 2);
   player_one.score = 0;
   player_two.score = 0;
 }
@@ -603,28 +554,32 @@ run_game()
     }
     else if(game.state == state_play)
     {
-      key_pressed = wgetch(game_win.win);
+      game.input = wgetch(game_win.win);
       werase(game_win.win);
       werase(score_win.win);
 
       update_players();
-      i32 winner = update_ball();
+      update_ball();
 
       render_arena();
-      render_players();
+      render_player();
       render_ball();
       render_score();
 
-      if(winner)
+      if(game.winner)
       {
-        render_victory(winner);
+        render_victory();
       }
+
+      // NOTE(Rami): 
+      // wattron(game_win.win, COLOR_PAIR(white_pair));
+      // mvwprintw(game_win.win, 18, 28, "sleep_current: %d", game.sleep_current);
+      // wattroff(game_win.win, COLOR_PAIR(white_pair));
 
       wrefresh(game_win.win);
       wrefresh(score_win.win);
 
-      // NOTE(Rami):
-      usleep(64000);
+      usleep(game.sleep_current);
     }
     else if(game.state == state_controls)
     {
@@ -632,8 +587,8 @@ run_game()
 
       render_controls(game_win.win);
 
-      i32 input = wgetch(game_win.win);
-      if(input == key_enter)
+      game.input = wgetch(game_win.win);
+      if(game.input == key_enter)
       {
         game.state = state_main_menu;
       }
@@ -646,8 +601,6 @@ run_game()
 internal i32
 init_game()
 {
-  srand(time(NULL));
-
   initscr();
 
   if(!has_colors())
@@ -655,6 +608,8 @@ init_game()
     printf("Your terminal does not support colors.\n");
     return 0;
   }
+
+  srand(time(NULL));
 
   start_color();
   curs_set(0);        // cursor off
@@ -679,6 +634,11 @@ init_game()
   init_pair(cyan_pair, COLOR_CYAN, COLOR_CYAN);
   init_pair(white_pair, COLOR_WHITE, COLOR_CYAN);
 
+  game.sleep_high_limit = 56000;
+  game.sleep_low_limit = 12000;
+  game.sleep_current = game.sleep_high_limit;
+  game.sleep_change = 4000;
+
   game_win.y = 3;
   game_win.w = 75;
   game_win.h = 20;
@@ -701,24 +661,20 @@ init_game()
   player_one.w = 1;
   player_one.h = 4;
   player_one.glyph = '|';
-  player_one.can_add_speed = 1;
 
   player_two.x = 72;
   player_two.y = 8;
   player_two.w = 1;
   player_two.h = 4;
   player_two.glyph = '|';
-  player_two.can_add_speed = 1;
 
-  ball.glyph = 'O';
   ball.x = game_win.w / 2;
   ball.y = game_win.h / 2;
-  ball.x_speed = 1;
-  ball.y_speed = 1;
+  ball.x_dir = rnum(dir_left, dir_right);
+  ball.y_dir = rnum(dir_up, dir_down);
 
-  // NOTE(Rami): rand these I guess
-  ball.flag_x = 0;
-  ball.flag_y = 0;
+  ball.glyph = 'O';
+  ball.speed = 1;
 
   return 1;
 }
