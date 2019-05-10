@@ -17,4 +17,4 @@ cd src
 The resulting binary will be in src/build/
 
 ### Gallery
-![NPONG](https://i.imgur.com/BQpLtjW.png)
+![NPONG](https://i.imgur.com/fOouY3K.png)
