@@ -1,9 +1,11 @@
 #define _DEFAULT_SOURCE
 #include <unistd.h>
+
+#include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <ncurses.h>
+#include <stdint.h>
 
 #define internal static
 #define global static
