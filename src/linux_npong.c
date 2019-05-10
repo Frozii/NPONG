@@ -1,6 +1,5 @@
 #define _DEFAULT_SOURCE
 #include <unistd.h>
-
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -27,7 +26,7 @@ typedef u32 b32;
 enum
 {
   key_enter = 10
-};
+} key_e;
 
 enum
 {
@@ -41,26 +40,28 @@ enum
   white_pair,
 
   cyan_background_pair
-};
+} color_e;
 
 typedef enum
 {
-
   state_main_menu,
   state_play,
   state_controls,
   state_quit,
-
-  state_none,
+  state_none
 } game_state_e;
 
 enum
 {
-  dir_up = 0,
-  dir_down = 1,
-  dir_left = 0,
-  dir_right = 1
-};
+  state_up,
+  state_down,
+  state_left,
+  state_right,
+  state_up_left,
+  state_up_right,
+  state_down_left,
+  state_down_right,
+} ball_state_e;
 
 typedef struct
 {
@@ -85,12 +86,10 @@ typedef struct
 
 typedef struct
 {
-  i32 x;
-  i32 y;
-  i32 x_dir;
-  i32 y_dir;
+  r32 x;
+  r32 y;
+  i32 state;
   i32 glyph;
-  i32 speed;
 } ball_t;
 
 typedef struct
@@ -160,12 +159,9 @@ reset_ball()
 {
   ball.x = game_win.w / 2;
   ball.y = game_win.h / 2;
-  ball.x_dir = rnum(dir_left, dir_right);
-  ball.y_dir = rnum(dir_up, dir_down);
 
   // Since the rate at which the game gets updated depends on game.sleep_value
   // and that directly affects the ball, we will reset game.sleep_value here
-
   game.sleep_current = game.sleep_high_limit;
 }
 
@@ -177,7 +173,14 @@ update_ball()
      (ball.y >= player_one.y &&
       ball.y <= (player_one.y + player_one.h - 1)))
   {
-    ball.x_dir = dir_right;
+    if(ball.state == state_up_left)
+    {
+      ball.state = state_up_right;
+    }
+    else if(ball.state == state_down_left)
+    {
+      ball.state = state_down_right;
+    }
 
     if(game.sleep_current > game.sleep_low_limit)
     {
@@ -186,9 +189,16 @@ update_ball()
   }
   else if((ball.x + 1) == player_two.x &&
           (ball.y >= player_two.y &&
-          ball.y <= (player_two.y + player_one.h - 1)))
+           ball.y <= (player_two.y + player_one.h - 1)))
   {
-    ball.x_dir = dir_left;
+    if(ball.state == state_up_right)
+    {
+      ball.state = state_up_left;
+    }
+    else if(ball.state == state_down_right)
+    {
+      ball.state = state_down_left;
+    }
 
     if(game.sleep_current > game.sleep_low_limit)
     {
@@ -199,50 +209,64 @@ update_ball()
   // Wall collision
   if(ball.x < 2)
   {
-    reset_ball();
-
     player_two.score++;
     if(player_two.score >= 5)
     {
       game.winner = 2;
     }
+    else
+    {
+      reset_ball();
+      ball.state = rnum(state_up_left, state_down_right);
+    }
   }
   else if(ball.x > (game_win.w - 3))
   {
-    reset_ball();
-
     player_one.score++;
     if(player_one.score >= 5)
     {
       game.winner = 1;
     }
+    else
+    {
+      reset_ball();
+      ball.state = rnum(state_up_left, state_down_right);
+    }
   }
   else if(ball.y < 2)
   {
-    ball.y_dir = dir_down;
+    if(ball.state == state_up_left)
+    {
+      ball.state = state_down_left;
+    }
+    else if(ball.state == state_up_right)
+    {
+      ball.state = state_down_right;
+    }
   }
   else if(ball.y > (game_win.h - 3))
   {
-    ball.y_dir = dir_up;
+    if(ball.state == state_down_left)
+    {
+      ball.state = state_up_left;
+    }
+    else if(ball.state == state_down_right)
+    {
+      ball.state = state_up_right;
+    }
   }
 
   // Apply speed
-  if(ball.x_dir == dir_right)
+  switch(ball.state)
   {
-    ball.x += ball.speed;
-  }
-  else if(ball.x_dir == dir_left)
-  {
-    ball.x -= ball.speed;
-  }
-
-  if(ball.y_dir == dir_down)
-  {
-    ball.y += ball.speed;
-  }
-  else if(ball.y_dir == dir_up)
-  {
-    ball.y -= ball.speed;
+    case state_up: ball.y -= 1; break;
+    case state_down: ball.y += 1; break;
+    case state_left: ball.x -= 1; break;
+    case state_right: ball.x += 1; break;
+    case state_up_left: ball.x -= 1; ball.y -= 1; break;
+    case state_up_right: ball.x += 1; ball.y -= 1; break;
+    case state_down_left: ball.x -= 1; ball.y += 1; break;
+    case state_down_right: ball.x += 1; ball.y += 1; break;
   }
 }
 
@@ -571,11 +595,6 @@ run_game()
         render_victory();
       }
 
-      // NOTE(Rami): 
-      // wattron(game_win.win, COLOR_PAIR(white_pair));
-      // mvwprintw(game_win.win, 18, 28, "sleep_current: %d", game.sleep_current);
-      // wattroff(game_win.win, COLOR_PAIR(white_pair));
-
       wrefresh(game_win.win);
       wrefresh(score_win.win);
 
@@ -670,11 +689,8 @@ init_game()
 
   ball.x = game_win.w / 2;
   ball.y = game_win.h / 2;
-  ball.x_dir = rnum(dir_left, dir_right);
-  ball.y_dir = rnum(dir_up, dir_down);
-
+  ball.state = rnum(state_up_left, state_down_right);
   ball.glyph = 'O';
-  ball.speed = 1;
 
   return 1;
 }
