@@ -159,8 +159,8 @@ render_player()
 internal void
 reset_ball()
 {
-  ball.x = game_win.w / 2;
-  ball.y = game_win.h / 2;
+  ball.x = game_win.w / 2; 
+  ball.y = rnum(game_win.y, game_win.h - 4);
 
   // Since the rate at which the game gets updated depends on game.sleep_value
   // and that directly affects the ball, we will reset game.sleep_value here
@@ -530,12 +530,12 @@ render_victory()
   for(;;)
   {
     game.input = wgetch(game_win.win);
-    if(game.input == 'Q' || game.input == 'q')
+    if(game.input == 'q' || game.input == 'Q')
     {
       game.state = state_main_menu;
       break;
     }
-    else if(game.input == 'R' || game.input == 'r')
+    else if(game.input == 'r' || game.input == 'R')
     {
       nodelay(game_win.win, 1);
       break;
@@ -548,6 +548,8 @@ render_victory()
   player_two.y = (game_win.h / 2) - (player_two.h / 2);
   player_one.score = 0;
   player_two.score = 0;
+
+  reset_ball();
 }
 
 internal void
@@ -690,7 +692,7 @@ init_game()
   player_two.glyph = '|';
 
   ball.x = game_win.w / 2;
-  ball.y = game_win.h / 2;
+  ball.y = rnum(game_win.y, game_win.h - 4);
   ball.state = rnum(state_up_left, state_down_right);
   ball.glyph = 'O';
 
