@@ -50,7 +50,6 @@ typedef enum
   state_play,
   state_controls,
   state_quit,
-  state_none
 } game_state_e;
 
 enum
@@ -352,11 +351,9 @@ render_main_menu()
   }
 }
 
-internal i32
+internal void
 update_main_menu()
 {
-  i32 result = state_none;
-
   game.input = wgetch(game_win.win);
   switch(game.input)
   {
@@ -380,22 +377,21 @@ update_main_menu()
     {
       if(highlighted == 0)
       {
-        result = state_play;
+        nodelay(game_win.win, 1);
+        game.state = state_play;
       }
       else if(highlighted == 1)
       {
-        result = state_controls;
+        game.state = state_controls;
       }
       else if(highlighted == 2)
       {
-        result = state_quit;
+        game.state = state_quit;
       }
     } break;
 
     default: break;
   }
-
-  return result;
 }
 
 internal void
@@ -562,21 +558,7 @@ run_game()
       werase(game_win.win);
 
       render_main_menu(game_win.win);
-      i32 result = update_main_menu(game_win.win);
-
-      if(result == state_play)
-      {
-        nodelay(game_win.win, 1);
-        game.state = state_play;
-      }
-      else if(result == state_controls)
-      {
-        game.state = state_controls;
-      }
-      else if(result == state_quit)
-      {
-        game.state = state_quit;
-      }
+      update_main_menu(game_win.win);
 
       wrefresh(game_win.win);
     }
